@@ -6,7 +6,7 @@ main       proc    101    2    2
            ldc 100
            call setElt
            ldp
-           ldc 33
+           ldc 50
            lda 2 1
            call getElt
            str 2 101
