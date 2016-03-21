@@ -1,0 +1,62 @@
+main       proc    5    2    2
+           sym  2 1 1        
+           sym  2 2 1
+           sym  2 3 1
+           sym  2 4 1
+           sym  2 5 1
+           ldc  2
+           str  2     1
+$$1        nop
+           lod  2     1
+           ldc  500
+           le        
+           fjp  $$2
+           ldc  0
+           str  2     5
+           lod  2     1
+           ldc  2
+           div     
+           str  2     3
+           ldc  1
+           str  2     2
+$$3        nop
+           lod  2     2
+           lod  2     3
+           le        
+           fjp  $$4
+           lod  2     1
+           lod  2     2
+           mod     
+           str  2     4
+           lod  2     4
+           ldc  0
+           eq        
+           fjp  $$5
+           lod  2     5
+           lod  2     2
+           add       
+           str  2     5
+$$5        nop
+           lod  2     2
+           inc
+           str  2     2
+           ujp  $$3
+$$4        nop
+           lod  2     1
+           lod  2     5
+           eq        
+           fjp  $$6
+           ldp       
+           lod  2     1
+           call write
+$$6        nop
+           lod  2     1
+           inc
+           str  2     1
+           ujp  $$1
+$$2        nop
+           end     
+           bgn 0
+           ldp
+           call main
+           end
