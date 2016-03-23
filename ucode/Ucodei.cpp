@@ -231,16 +231,21 @@ void Label::insertLabel(char label[], int value)
 
      for (index = 0; (index <= labelCnt) 
              && strcmp(labelTable[index].labelName, label); index++);
+			 //LabelName 같은 것이 없을 때 까지 index를 증가시킨다.
      labelTable[index].address = value;
-     if (index > labelCnt) {
-                  strcpy(labelTable[index].labelName, label);
-                  labelCnt = index;
-                  labelTable[index].instrList = NULL;
-     } else {
-                  ptr = labelTable[index].instrList;
-                  labelTable[index].instrList = NULL;
-                  while (ptr) {  // backpatching
-                       instrBuf[ptr->instrAddress].value1 = value;
+	 //index번째 table에 value(instrCnt)를 넣는다. 
+	 //결론적으로 index는 고정이 되고 value가 갱신 됨
+	 //즉, 해당 block(labelName으로 구분된)길이가 어디까지 되는지 기록해주는 역할을 최종적으로 하게 된다...! 
+     if (index > labelCnt) {//block 처음 부분(labelName이처음 나온 부분)인 경우
+                  strcpy(labelTable[index].labelName, label);// 라벨 이름을 등록하고
+                  labelCnt = index; // 라벨 카운터를 인덱스로 준다.
+                  labelTable[index].instrList = NULL; // 명령List는 NULL을 준다
+     } else { //처음 부분이 아닌 경우 (labelName부분이 공백)
+                  ptr = labelTable[index].instrList; // 명령List => ptr
+                  labelTable[index].instrList = NULL; //현재 명령list에 null을 준다.
+                  while (ptr) {  // backpatching //ptr이 NULL이 나올때 까지 돌린다.
+                       instrBuf[ptr->instrAddress].value1 = value; //instAddress가 어디서 초기화 해주지? [findLabel에서]
+					   // 이쪽은 좀 더 공부 후 돌아오자: 
                        ptr = ptr->next;
                   }
      }
