@@ -128,7 +128,7 @@
    ****    Result    ****
 
 
- 100 5 3 2 1
+ 8 7 6 5 4 2 1
 
    **********************
 
@@ -152,13 +152,13 @@ end    =  2       bgn    =  1       sym    =  6
   ****  Dynamic instruction counts  ****
 
 
-dup    =  1         add    =  108       sub    =  5         gt     =  5         
-lt     =  24        le     =  6         ne     =  6         lod    =  151       
-ldc    =  68        lda    =  68        ldi    =  41        ldp    =  12        
-str    =  40        sti    =  21        ujp    =  24        fjp    =  41        
-call   =  12        ret    =  1         nop    =  48        proc   =  1         
+dup    =  1         add    =  238       sub    =  7         gt     =  7         
+lt     =  48        le     =  8         ne     =  8         lod    =  295       
+ldc    =  128       lda    =  148       ldi    =  91        ldp    =  16        
+str    =  72        sti    =  49        ujp    =  41        fjp    =  71        
+call   =  16        ret    =  1         nop    =  80        proc   =  1         
 end    =  1         bgn    =  1         sym    =  6         
 
- Executable instruction count  =   635
+ Executable instruction count  =   1246
 
- Total execution cycle         =   5400
+ Total execution cycle         =   10310
