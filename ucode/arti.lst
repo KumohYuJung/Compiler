@@ -5,7 +5,7 @@
    2    (38    2    1)                sym 2 1 1
    3    (38    2    2)                sym 2 2 1
    4    (38    2    3)                sym 2 3 1
-   5    (38    2    4)                sym 2 4 100
+   5    (38    2    4)                sym 2 4 1
    6    (23          )                ldp
    7    (21    2    1)                lda 2 1
    8    (29   -1     )                call read
@@ -61,40 +61,41 @@
   58    (21    2    4)                lda 2 4
   59    (31          )                retv
   60    (35  101    2)     print      proc 101 2 3
-  61    (38    2    1)                sym 2 1 100
-  62    (38    2  101)                sym 2 101 1
+  61    (38    2    1)                sym 2 1 1
+  62    (38    2    2)                sym 2 2 1
   63    (20    1     )                ldc 1
-  64    (24    2  101)                str 2 101
+  64    (24    2    2)                str 2 2
   65    (34          )     $$3        nop
   66    (21    2    1)                lda 2 1
-  67    (19    2  101)                lod 2 101
+  67    (19    2    2)                lod 2 2
   68    ( 6          )                add
   69    (22          )                ldi
   70    (20  101     )                ldc 101
   71    (18          )                ne
-  72    (28   82     )                fjp $$4
+  72    (28   83     )                fjp $$4
   73    (23          )                ldp
   74    (21    2    1)                lda 2 1
-  75    (19    2  101)                lod 2 101
+  75    (19    2    2)                lod 2 2
   76    ( 6          )                add
-  77    (29   -2     )                call write
-  78    (19    2  101)                lod 2 101
-  79    ( 2          )                inc
-  80    (24    2  101)                str 2 101
-  81    (26   65     )                ujp $$3
-  82    (34          )     $$4        nop
-  83    (30          )                ret
-  84    (37    0     )                bgn 0
-  85    (23          )                ldp
-  86    (29    1     )                call main
-  87    (36          )                end
+  77    (22          )                ldi
+  78    (29   -2     )                call write
+  79    (19    2    2)                lod 2 2
+  80    ( 2          )                inc
+  81    (24    2    2)                str 2 2
+  82    (26   65     )                ujp $$3
+  83    (34          )     $$4        nop
+  84    (30          )                ret
+  85    (37    0     )                bgn 0
+  86    (23          )                ldp
+  87    (29    1     )                call main
+  88    (36          )                end
 
 
 
    ****    Result    ****
 
 
- 120 121 122 123 124
+ 1 10 0 1 4 7 10
 
    **********************
 
@@ -108,7 +109,7 @@
 
 
 inc    =  2       add    =  5       le     =  1       ne     =  1       
-lod    =  14      ldc    =  4       lda    =  9       ldi    =  1       
+lod    =  14      ldc    =  4       lda    =  9       ldi    =  2       
 ldp    =  7       str    =  6       sti    =  2       ujp    =  2       
 fjp    =  2       call   =  7       ret    =  2       retv   =  1       
 nop    =  4       proc   =  3       end    =  2       bgn    =  1       
@@ -118,13 +119,13 @@ sym    =  11
   ****  Dynamic instruction counts  ****
 
 
-inc    =  7         add    =  16        le     =  3         ne     =  6         
-lod    =  36        ldc    =  9         lda    =  19        ldi    =  6         
-ldp    =  11        str    =  12        sti    =  3         ujp    =  7         
-fjp    =  9         call   =  11        ret    =  2         retv   =  1         
-nop    =  11        proc   =  3         end    =  1         bgn    =  1         
+inc    =  11        add    =  24        le     =  5         ne     =  8         
+lod    =  56        ldc    =  11        lda    =  25        ldi    =  15        
+ldp    =  13        str    =  18        sti    =  5         ujp    =  11        
+fjp    =  13        call   =  13        ret    =  2         retv   =  1         
+nop    =  15        proc   =  3         end    =  1         bgn    =  1         
 sym    =  11        
 
- Executable instruction count  =   161
+ Executable instruction count  =   234
 
- Total execution cycle         =   1597
+ Total execution cycle         =   2201

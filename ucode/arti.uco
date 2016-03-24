@@ -2,7 +2,7 @@ main       proc 103 2 2
            sym 2 1 1
            sym 2 2 1
            sym 2 3 1
-           sym 2 4 100
+           sym 2 4 1
            ldp
            lda 2 1
            call read
@@ -58,13 +58,13 @@ $$2        nop
            lda 2 4
            retv
 print      proc 101 2 3
-           sym 2 1 100
-           sym 2 101 1
+           sym 2 1 1
+           sym 2 2 1
            ldc 1
-           str 2 101
+           str 2 2
 $$3        nop
            lda 2 1
-           lod 2 101
+           lod 2 2
            add
            ldi
            ldc 101
@@ -72,12 +72,13 @@ $$3        nop
            fjp $$4
            ldp
            lda 2 1
-           lod 2 101
+           lod 2 2
            add
+           ldi
            call write
-           lod 2 101
+           lod 2 2
            inc
-           str 2 101
+           str 2 2
            ujp $$3
 $$4        nop
            ret
