@@ -19,39 +19,39 @@ main       proc 103 2 2
            call arti
            str 2 4
            ldp
-           lda 2 4
+           lod 2 4
            call print
            ret
            end
-arti       proc 104 2 3
+arti       proc 105 2 3
            sym 2 1 1
            sym 2 2 1
            sym 2 3 1
            sym 2 4 100
-           sym 2 104 1
+           sym 2 105 1
            ldc 1
-           str 2 104
+           str 2 105
 $$1        nop
            lod 2 1
            lod 2 3
            le
            fjp $$2
            lda 2 4
-           lod 2 104
+           lod 2 105
            add
            lod 2 1
            sti
-           lod 2 104
+           lod 2 105
            inc
-           str 2 104
+           str 2 105
            lod 2 1
            lod 2 2
            add
            str 2 1
            ujp $$1
 $$2        nop
-           lod 2 104
            lda 2 4
+           lod 2 105
            add
            ldc 101
            sti
@@ -63,7 +63,7 @@ print      proc 101 2 3
            ldc 1
            str 2 2
 $$3        nop
-           lda 2 1
+           lod 2 1
            lod 2 2
            add
            ldi
@@ -71,7 +71,7 @@ $$3        nop
            ne
            fjp $$4
            ldp
-           lda 2 1
+           lod 2 1
            lod 2 2
            add
            ldi
