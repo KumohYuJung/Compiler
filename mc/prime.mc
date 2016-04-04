@@ -1,7 +1,7 @@
 const int max = 100;
 void main(){
 	int i, j, k;
-	int rem, prime;
+	int rem, prime;/Volumes/window/Users/DongHwan/Desktop/Complier Homeworks/Ucodei/Compiler/mc/bubble.mc
 
 	i = 2;
 	while (i <= max){
