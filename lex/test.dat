@@ -1,0 +1,4 @@
+begin
+num := 0;
+num := num + 526;
+end.
