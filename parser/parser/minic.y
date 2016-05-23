@@ -29,7 +29,6 @@ void yyerror(char *s);
 %token ADDASSIGN SUBASSIGN MULASSIGN MODASSIGN DIVASSIGN /* +=, -=, *=, %=, /= */
 %token OR AND						/* ||, && */
 %nonassoc IFX
-%nonassoc CASEX
 %nonassoc ELSE					
 %left GE LE EQ NE '>' '<'			/* >= <= == != */
 %left '+' '-'
@@ -40,7 +39,7 @@ void yyerror(char *s);
 	formal_param_list param_dcl compound_st opt_dcl_list declaration_list declaration init_dcl_list
 	init_declarator declarator opt_number opt_stat_list statement_list statement expression_st 
 	opt_expression if_st while_st return_st for_st for_dcl for_exp for_inc continue_st break_st
-	switch_st switch_case_list switch_case switch_default loop_st condition_st flow_st expression
+	switch_st switch_case_list switch_case loop_st condition_st flow_st expression
 	assignment_exp logical_or_exp logical_and_exp equality_exp relational_exp additive_exp
 	multiplicative_exp unary_exp postfix_exp opt_actual_param actual_param_list primary_exp
 
@@ -161,16 +160,11 @@ switch_st:
 	;
 switch_case_list:
 	switch_case_list switch_case {}
-	| switch_case_list switch_default {}
-	| {} 
+	| switch_case {}
 	;
 switch_case:
 	CASE INTEGER ':' statement_list {}
-	| CASE INTEGER ':' %prec CASEX {} 
-	;
-switch_default:
-	DEFAULT ':' statement_list {}
-	| DEFAULT ':' %prec CASEX{}
+	| DEFAULT ':' statement_list {} 
 	;
 statement:
 	compound_st {}
@@ -288,7 +282,16 @@ primary_exp:
 void yyerror(char *s){
 	fprintf(stdout, "%s\n", s);
 }
-int main(void){
+int main(int argc, char *argv[]){
+	FILE *cFile;
+	
+	Node *root;
+	
+	if(argc != 2){
+		fprintf(stderr, "arguments not valid.");
+		return -1;
+	}
+
 	yyparse();
 	return 0;
 }
