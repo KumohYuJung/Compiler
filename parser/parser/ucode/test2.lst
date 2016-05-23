@@ -1,0 +1,86 @@
+
+ line       object           ucode  source program
+
+   1    (41  103    2)     main       proc 103 2 2
+   2    (44    2    1)                sym 2 1 1
+   3    (44    2    2)                sym 2 2 1
+   4    (44    2    3)                sym 2 3 1
+   5    (44    2    4)                sym 2 4 1
+   6    ( 6          )                ldcf 100.123
+   7    ( 6          )                ldcf 123.2891
+   8    ( 2          )                addf
+   9    (30    2    1)                str 2 1
+  10    (30    2    2)                str 2 2
+  11    (29          )                ldp
+  12    (25    2    1)                lod 2 1
+  13    (25    2    2)                lod 2 2
+  14    (35   -4     )                call fwrite
+  15    ( 6          )                ldcf 80.123
+  16    ( 6          )                ldcf 40.765
+  17    ( 4          )                subf
+  18    (30    2    1)                str 2 1
+  19    (30    2    2)                str 2 2
+  20    (29          )                ldp
+  21    (25    2    1)                lod 2 1
+  22    (25    2    2)                lod 2 2
+  23    (35   -4     )                call fwrite
+  24    ( 6          )                ldcf 12.12
+  25    ( 6          )                ldcf 3.9
+  26    ( 5          )                multf
+  27    (30    2    1)                str 2 1
+  28    (30    2    2)                str 2 2
+  29    (29          )                ldp
+  30    (25    2    1)                lod 2 1
+  31    (25    2    2)                lod 2 2
+  32    (35   -4     )                call fwrite
+  33    ( 6          )                ldcf 6.3
+  34    ( 6          )                ldcf 2.4
+  35    ( 3          )                divf
+  36    (30    2    1)                str 2 1
+  37    (30    2    2)                str 2 2
+  38    (29          )                ldp
+  39    (25    2    1)                lod 2 1
+  40    (25    2    2)                lod 2 2
+  41    (35   -4     )                call fwrite
+  42    (36          )                ret
+  43    (42          )                end
+  44    (43    0     )                bgn 0
+  45    (29          )                ldp
+  46    (35    1     )                call main
+  47    (42          )                end
+
+
+
+   ****    Result    ****
+
+
+ 223.412 39.358 47.268 2.625
+
+   **********************
+
+
+
+
+                 #### Statistics ####
+
+
+    ****  Static Instruction Counts  ****
+
+
+addf   =  1       divf   =  1       subf   =  1       multf  =  1       
+ldcf   =  8       lod    =  8       ldp    =  5       str    =  8       
+call   =  5       ret    =  1       proc   =  1       end    =  2       
+bgn    =  1       sym    =  4       
+
+
+  ****  Dynamic instruction counts  ****
+
+
+addf   =  1         divf   =  1         subf   =  1         multf  =  1         
+ldcf   =  8         lod    =  8         ldp    =  5         str    =  8         
+call   =  5         ret    =  1         proc   =  1         end    =  1         
+bgn    =  1         sym    =  4         
+
+ Executable instruction count  =   40
+
+ Total execution cycle         =   400
