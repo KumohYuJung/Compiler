@@ -63,12 +63,13 @@
      OR = 279,
      AND = 280,
      IFX = 281,
-     ELSE = 282,
-     NE = 283,
-     EQ = 284,
-     LE = 285,
-     GE = 286,
-     UMINUS = 287
+     CASEX = 282,
+     ELSE = 283,
+     NE = 284,
+     EQ = 285,
+     LE = 286,
+     GE = 287,
+     UMINUS = 288
    };
 #endif
 /* Tokens.  */
@@ -96,26 +97,27 @@
 #define OR 279
 #define AND 280
 #define IFX 281
-#define ELSE 282
-#define NE 283
-#define EQ 284
-#define LE 285
-#define GE 286
-#define UMINUS 287
+#define CASEX 282
+#define ELSE 283
+#define NE 284
+#define EQ 285
+#define LE 286
+#define GE 287
+#define UMINUS 288
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 9 "minic.y"
+#line 14 "minic.y"
 {
 	int iValue;
 	char* string;
 	nodeType *nPtr;
 }
 /* Line 1529 of yacc.c.  */
-#line 119 "minic.tab.h"
+#line 121 "minic.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

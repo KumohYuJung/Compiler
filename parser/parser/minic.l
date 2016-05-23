@@ -17,6 +17,7 @@ ID	[A-Za-z_][A-Za-z0-9_]*
 "while" return WHILE;
 "for" return FOR;
 "if" return IF;
+"else" return ELSE;
 "switch" return SWITCH;
 "continue" return CONTINUE;
 "break" return BREAK;
