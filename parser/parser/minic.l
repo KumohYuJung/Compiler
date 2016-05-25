@@ -1,6 +1,6 @@
 %{
 	#include <stdlib.h>
-	#include "minic.h"
+//	#include "minic.h"
 	#include "minic.tab.h"
 
 	void yyerror(char *s);
@@ -11,32 +11,32 @@ ID	[A-Za-z_][A-Za-z0-9_]*
 
 %%
 
-"int" return INT;
-"void" return VOID;
-"const" return CONST;
-"while" return WHILE;
-"for" return FOR;
-"if" return IF;
-"else" return ELSE;
-"switch" return SWITCH;
-"continue" return CONTINUE;
-"break" return BREAK;
-"return" return RETURN;
-"case" return CASE;
-"default" return DEFAULT;
-"++" return INC;
-"--" return DEC;
-"+=" return ADDASSIGN;
-"-=" return SUBASSIGN;
-"*=" return MULASSIGN;
-"%=" return MODASSIGN;
-"/=" return DIVASSIGN;
-"||" return OR;
-"&&" return AND;
-">=" return GE;
-"<=" return LE;
-"==" return EQ;
-"!=" return NE;
+"int" return TINT;
+"void" return TVOID;
+"const" return TCONST;
+"while" return TWHILE;
+"for" return TFOR;
+"if" return TIF;
+"else" return TELSE;
+"switch" return TSWITCH;
+"continue" return TCONTINUE;
+"break" return TBREAK;
+"return" return TRETURN;
+"case" return TCASE;
+"default" return TDEFAULT;
+"++" return TINC;
+"--" return TDEC;
+"+=" return TADDASSIGN;
+"-=" return TSUBASSIGN;
+"*=" return TMULASSIGN;
+"%=" return TMODASSIGN;
+"/=" return TDIVASSIGN;
+"||" return TOR;
+"&&" return TAND;
+">=" return TGE;
+"<=" return TLE;
+"==" return TEQ;
+"!=" return TNE;
 [\+\-\*/%\(\)<>\[\],;\{\}\.\/=:] {
 	
 	return yytext[0];
@@ -46,15 +46,20 @@ ID	[A-Za-z_][A-Za-z0-9_]*
 "/*"([^*]|\*+[^*/])*\**"*/" ;
 
 {DIGIT}	{ 
-	yylval.iValue = atoi( yytext );
-	return INTEGER;
+	yylval.string = yytext;
+	return TINTEGER;
 }
 {ID}	{
 	yylval.string = yytext;
-	return IDENTITY;
+	return TIDENTITY;
 }
 
 [ \t\n]    ;
 .  yyerror("Unknown Character!\n");
 
 %%
+
+int yywrap()
+{
+	return 1;
+}

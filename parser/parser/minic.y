@@ -1,39 +1,39 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include "minic.h"
+#include <string.h>
+//#include "minic.h"
+#include "minic_ast.h"
 
-
+extern FILE *yyin;
 
 int yylex(void);
 void yyerror(char *s);
-
+Node *root;
 %}
 
 %union{
-	int iValue;
 	char* string;
-	nodeType *nPtr;
+	struct nodeType *nPtr;
 }
 
-%token <iValue> INTEGER
-%token <string> IDENTITY
-%token INT VOID						/* qualifier */
-%token CONST						/* specifier */
-%token WHILE FOR					/* 반복문 */
-%token IF SWITCH					/* 조건문 */
-%token CONTINUE BREAK RETURN		/* 흐름문 */
-%token CASE DEFAULT					/* CASE문 */
-%token INC DEC						/* ++, -- */
-%token ADDASSIGN SUBASSIGN MULASSIGN MODASSIGN DIVASSIGN /* +=, -=, *=, %=, /= */
-%token OR AND						/* ||, && */
-%nonassoc IFX
-%nonassoc ELSE					
-%left GE LE EQ NE '>' '<'			/* >= <= == != */
+%token <string> TINTEGER
+%token <string> TIDENTITY
+%token TINT TVOID						/* qualifier */
+%token TCONST						/* specifier */
+%token TWHILE TFOR					/* 반복문 */
+%token TIF TSWITCH					/* 조건문 */
+%token TCONTINUE TBREAK TRETURN		/* 흐름문 */
+%token TCASE TDEFAULT					/* TCASE문 */
+%token TINC TDEC						/* ++, -- */
+%token TADDASSIGN TSUBASSIGN TMULASSIGN TMODASSIGN TDIVASSIGN /* +=, -=, *=, %=, /= */
+%token TOR TAND						/* ||, && */
+%nonassoc TIFX
+%nonassoc TELSE					
+%left TGE TLE TEQ TNE '>' '<'			/* >= <= == != */
 %left '+' '-'
 %left '*' '/'
-%nonassoc UMINUS
+%nonassoc TUMINUS
 %type <nPtr> translation_unit external_dcl function_def function_header dcl_spec dcl_specifiers
 	dcl_specifier type_qualifier type_specifier function_name formal_param opt_formal_param
 	formal_param_list param_dcl compound_st opt_dcl_list declaration_list declaration init_dcl_list
@@ -45,97 +45,163 @@ void yyerror(char *s);
 
 %%
 mini_c:
-	translation_unit	{ exit(0); }
+	translation_unit	{ 
+		root = buildTree(PROGRAM, $1);
+	}
 	;
 translation_unit:
-	external_dcl					{}
-	| translation_unit external_dcl	{}
+	external_dcl{
+		$$ = $1;
+	}
+	| translation_unit external_dcl	{
+		appendBrother($1,$2);
+		$$ = $1;
+	}
 	;
 external_dcl:
-	function_def		{}
-	| declaration			{}
+	function_def{
+		$$ = $1;
+	}
+	| declaration{
+		$$ = $1;
+	}
 	;
 function_def:
-	function_header compound_st		{}
+	function_header compound_st	{
+		appendBrother($1, $2);
+		$$ = buildTree(FUNC_DEF, $1);
+	}
 	;
 function_header:
-	dcl_spec function_name formal_param {}
+	dcl_spec function_name formal_param {
+		appendBrother($1, $2);
+		appendBrother($2, $3);
+		$$ = buildTree(FUNC_HEAD, $1);
+
+	}
 	;
 dcl_spec:
-	dcl_specifiers	{}
+	dcl_specifiers	{
+		$$ = buildTree(DCL_SPEC,$1);
+	}
 	;
 dcl_specifiers:
-	dcl_specifier {}
-	| dcl_specifiers dcl_specifier
+	 dcl_specifier {
+		$$ = $1;
+	}
+	| dcl_specifiers dcl_specifier {
+		appendNext($1, $2);
+		$$ = $1;
+	}
 	;
 dcl_specifier:
-	type_qualifier	{}
-	| type_specifier	{}
+	type_qualifier	{ $$ = $1; }
+	| type_specifier	{ $$ = $1; }
 	;
 type_qualifier:
-	CONST {}
+	TCONST {
+		$$ = buildTree(CONST_TYPE, NULL);
+	}
 	;
 type_specifier:
-	INT		{}
-	| VOID	{}
+	TINT{
+		$$ = buildTree(INT_TYPE, NULL);
+	}
+	| TVOID{
+		$$ = buildTree(VOID_TYPE, NULL);
+	}
 	;
 function_name:
-	IDENTITY	{}
+	TIDENTITY{
+		$$ = buildNode(IDENT,$1);
+	}
 	;
 formal_param:
-	'(' opt_formal_param ')' {}
+	'(' opt_formal_param ')'{
+		$$ = buildTree(FORMAL_PARA, $2);
+	}
 	;
 opt_formal_param:
-	formal_param_list {}
-	| {} 
+	formal_param_list { $$ = $1; }
+	| { $$ = NULL; } 
 	;
 formal_param_list:
-	param_dcl {}
-	| formal_param_list ',' param_dcl {}
+	param_dcl { $$ = $1; }
+	| formal_param_list ',' param_dcl {
+		appendBrother($1, $3);
+		$$ = $1;
+	}
 	;
 param_dcl:
-	dcl_spec declarator {}
+	dcl_spec declarator {
+		appendBrother($1, $2);
+		$$ = buildTree(PARAM_DCL, $1);
+	}
 	;
 compound_st:
-	'{' opt_dcl_list opt_stat_list '}' {}
+	'{' opt_dcl_list opt_stat_list '}' {
+		appendBrother($2, $3);
+		$$ = buildTree(COMPOUND_ST, $2);
+	}
 	;
 opt_dcl_list:
-	declaration_list {}
-	| {}
+	declaration_list { $$ = buildTree(DCL_LIST, $1); }
+	| { $$ = buildTree(DCL_LIST,NULL); }
 	;
 declaration_list:
-	declaration {}
-	| declaration_list declaration {}
+	declaration { $$ = $1; }
+	| declaration_list declaration { 
+		appendBrother($1, $2);
+		$$ = $1;
+	}
 	;
 declaration:
-	dcl_spec init_dcl_list ';' {}
+	dcl_spec init_dcl_list ';' {
+		appendBrother($1, $2);
+		$$ = buildTree(DCL, $1);
+	}
 	;
 init_dcl_list:
-	init_declarator {}
-	| init_dcl_list ',' init_declarator {}
+	init_declarator { $$ = $1; }
+	| init_dcl_list ',' init_declarator { 
+		appendBrother($1, $3);
+		$$ = $1;
+	}
 	;
 init_declarator:
-	declarator {}
-	| declarator '=' INTEGER {}
+	declarator { $$ = $1; }
+	| declarator '=' TINTEGER {
+		appendBrother($1->son, buildNode(NUMBER, $3)); 
+	}
 	;
 declarator:
-	IDENTITY {}
-	| IDENTITY '[' opt_number ']' {}
+	TIDENTITY {
+		Node* ptr = buildTree(SIMPLE_VAR, buildNode(IDENT, $1));
+		$$ = buildTree(DCL_ITEM,ptr);
+	}
+	| TIDENTITY '[' opt_number ']' {
+		Node* ptr = buildNode(IDENT, $1);
+		appendBrother(ptr,$3);
+		$$ = buildTree(DCL_ITEM, buildTree(ARRAY_VAR, ptr));
+	}
 	;
 opt_number:
-	INTEGER {}
-	| {}
+	TINTEGER { $$ = buildNode(NUMBER, $1); }
+	| { $$ = NULL; }
 	;
 opt_stat_list:
-	statement_list {}
-	| {} 
+	statement_list { $$ = buildTree(STAT_LIST, $1); }
+	| { $$ = NULL; } 
 	;
 statement_list:
-	statement {}
-	| statement_list statement {}
+	statement { $$ = $1; }
+	| statement_list statement { 
+		appendBrother($1, $2);
+		$$ = $1; 
+	}
 	;
 for_st:
-	FOR '(' for_dcl ';' for_exp ';' for_inc')' statement {}
+	TFOR '(' for_dcl ';' for_exp ';' for_inc')' statement {}
 	;
 for_dcl:
 	dcl_spec init_dcl_list {}
@@ -150,21 +216,21 @@ for_inc:
 	| {} 
 	;
 continue_st:
-	CONTINUE ';' {}
+	TCONTINUE ';' {}
 	;
 break_st:
-	BREAK ';' {}
+	TBREAK ';' {}
 	;
 switch_st:
-	SWITCH '(' declarator ')' '{' switch_case_list'}' {}
+	TSWITCH '(' declarator ')' '{' switch_case_list'}' {}
 	;
 switch_case_list:
 	switch_case_list switch_case {}
 	| switch_case {}
 	;
 switch_case:
-	CASE INTEGER ':' statement_list {}
-	| DEFAULT ':' statement_list {} 
+	TCASE TINTEGER ':' statement_list {}
+	| TDEFAULT ':' statement_list {} 
 	;
 statement:
 	compound_st {}
@@ -194,87 +260,172 @@ opt_expression:
 	| {}
 	;
 if_st:
-	IF '(' expression ')' statement %prec IFX {}
-	| IF '(' expression ')' statement ELSE statement {}
+	TIF '(' expression ')' statement %prec TIFX {}
+	| TIF '(' expression ')' statement TELSE statement {}
 	;
 while_st:
-	WHILE '(' expression ')' statement {}
+	TWHILE '(' expression ')' statement {
+		appendBrother($3, $5);
+		$$ = buildTree(WHILE_ST, $3);
+	}
 	;
 return_st:
-	RETURN opt_expression ';' {}
+	TRETURN opt_expression ';' { 
+		$$ = buildTree(RETURN_ST, $2);
+	}
 	;
 expression:
-	assignment_exp {}
+	assignment_exp { $$ = $1; }
 	;
 assignment_exp:
-	logical_or_exp {}
-	| unary_exp '=' assignment_exp {}
-	| unary_exp ADDASSIGN assignment_exp {}
-	| unary_exp SUBASSIGN assignment_exp {}
-	| unary_exp MULASSIGN assignment_exp {}
-	| unary_exp DIVASSIGN assignment_exp {}
-	| unary_exp MODASSIGN assignment_exp {}
+	logical_or_exp { $$ = $1; }
+	| unary_exp '=' assignment_exp { 
+		appendBrother($1, $3);
+		$$ = buildTree(ASSIGN_OP, $1);
+	}
+	| unary_exp TADDASSIGN assignment_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(ADD_ASSIGN, $1);
+	}
+	| unary_exp TSUBASSIGN assignment_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(SUB_ASSIGN, $1);
+	}
+	| unary_exp TMULASSIGN assignment_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(MUL_ASSIGN, $1);
+	}
+	| unary_exp TDIVASSIGN assignment_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(DIV_ASSIGN, $1);
+	}
+	| unary_exp TMODASSIGN assignment_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(MOD_ASSIGN, $1);
+	}
 	;
 logical_or_exp:
-	logical_and_exp {}
-	| logical_or_exp OR logical_and_exp {}
+	logical_and_exp { $$ = $1; }
+	| logical_or_exp TOR logical_and_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(OR, $1);
+	}
 	;
 logical_and_exp:
-	equality_exp {}
-	| logical_and_exp AND equality_exp {}
+	equality_exp { $$ = $1; }
+	| logical_and_exp TAND equality_exp {
+		appendBrother($1,$3);
+		$$ = buildTree(AND, $1);
+	}
 	;
 equality_exp:
-	relational_exp {}
-	| equality_exp EQ relational_exp {}
-	| equality_exp NE relational_exp {}
+	relational_exp { $$ = $1; }
+	| equality_exp TEQ relational_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(EQ, $1);
+	}
+	| equality_exp TNE relational_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(NE, $1);
+	}
 	;
 relational_exp:
-	additive_exp {}
-	| relational_exp '>' additive_exp {}
-	| relational_exp '<' additive_exp {}
-	| relational_exp GE additive_exp  {}
-	| relational_exp LE additive_exp  {}
+	additive_exp { $$ = $1; }
+	| relational_exp '>' additive_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(GT, $1);
+	}
+	| relational_exp '<' additive_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(LT, $1);
+	}
+	| relational_exp TGE additive_exp  {
+		appendBrother($1, $3);
+		$$ = buildTree(GE, $1);
+	}
+	| relational_exp TLE additive_exp  {
+		appendBrother($1, $3);
+		$$ = buildTree(LE, $1);
+	}
 	;
 additive_exp:
-	multiplicative_exp {}
-	| additive_exp '+' multiplicative_exp {}
-	| additive_exp '-' multiplicative_exp {}
+	multiplicative_exp { $$ = $1; }
+	| additive_exp '+' multiplicative_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(ADD, $1);
+	}
+	| additive_exp '-' multiplicative_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(SUB, $1);
+	}
 	;
 multiplicative_exp:
-	unary_exp {}
-	| multiplicative_exp '*' unary_exp {}
-	| multiplicative_exp '/' unary_exp {}
-	| multiplicative_exp '%' unary_exp {}
+	unary_exp { $$ = $1; }
+	| multiplicative_exp '*' unary_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(MUL, $1);
+	}
+	| multiplicative_exp '/' unary_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(DIV, $1);
+	}
+	| multiplicative_exp '%' unary_exp {
+		appendBrother($1, $3);
+		$$ = buildTree(MOD, $1);
+	}
 	;
 unary_exp:
-	postfix_exp {}
-	| '-' unary_exp {}
-	| '!' unary_exp {}
-	| INC unary_exp {}
-	| DEC unary_exp {}
+	postfix_exp { $$ = $1; }
+	| '-' unary_exp {
+		$$ = buildTree(UNARY_MINUS, $2);
+	}
+	| '!' unary_exp {
+		$$ = buildTree(LOGICAL_NOT, $2);
+	}
+	| TINC unary_exp {
+		$$ = buildTree(PRE_INC, $2);
+	}
+	| TDEC unary_exp {
+		$$ = buildTree(PRE_DEC, $2);
+	}
 	;
 postfix_exp:
-	primary_exp {}
-	| postfix_exp '[' expression ']' {}
-	| postfix_exp '(' opt_actual_param ')' {}
-	| postfix_exp INC {}
-	| postfix_exp DEC {}
+	primary_exp { $$ = $1; }
+	| postfix_exp '[' expression ']' {
+		appendBrother($1, $3);
+		$$ = buildTree(INDEX, $1);
+	}
+	| postfix_exp '(' opt_actual_param ')' {
+		appendBrother($1, $3);
+		$$ = buildTree(CALL, $1);
+	}
+	| postfix_exp TINC {
+		$$ = buildTree(POST_INC, $1);
+	}
+	| postfix_exp TDEC {
+		$$ = buildTree(POST_DEC, $1);
+	}
 	;
 opt_actual_param:
-	actual_param {}
-	| {} 
+	actual_param { $$ = $1; }
+	| { $$ = NULL; } 
 	;
 actual_param:
-	actual_param_list {}
+	actual_param_list {
+		$$ = buildTree(ACTUAL_PARAM, $1);	
+	}
 	;
 actual_param_list:
-	assignment_exp {}
-	| actual_param_list ',' assignment_exp {}
+	assignment_exp { $$ = $1; }
+	| actual_param_list ',' assignment_exp { 
+		appendBrother($1, $3);
+		$$ = $1;
+	}
 	;
 primary_exp:
-	IDENTITY {}
-	| INTEGER {}
-	| '(' expression ')' {} 
+	TIDENTITY { $$ = buildNode(IDENT, $1); }
+	| TINTEGER { $$ = buildNode(NUMBER, $1); }
+	| '(' expression ')' { $$ = $2; } 
 	;
 
 %%
@@ -282,16 +433,26 @@ primary_exp:
 void yyerror(char *s){
 	fprintf(stdout, "%s\n", s);
 }
+
+void parse(FILE *cFile)
+{
+	yyin = cFile;
+	do{
+		yyparse();
+	}while(!feof(yyin));
+}
 int main(int argc, char *argv[]){
-	FILE *cFile;
-	
-	Node *root;
-	
+	FILE *cFile, *astFile;
+	char fileName[256];
+	//Node *root;	
 	if(argc != 2){
 		fprintf(stderr, "arguments not valid.");
 		return -1;
 	}
-
-	yyparse();
+	strcpy(fileName, argv[1]);
+	cFile = fopen(fileName, "r");
+	astFile = fopen(strcat(strtok(fileName,"."),".ast"),"w");
+	parse(cFile);
+	//printTree(root,0,astFile);
 	return 0;
 }

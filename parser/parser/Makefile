@@ -1,9 +1,11 @@
 CC = gcc
-LIBS = -ll
+LIBS = -ll -ly
 LEX = flex
 YACC = bison
 all : minic
-minic: minic.c minic.tab.c
+debug : minic.c minic.tab.c minic_ast.c
+	$(CC) -g -o $@ $^ $(LIBS)
+minic: minic.c minic.tab.c minic_ast.c
 	$(CC) -o $@ $^ $(LIBS)
 minic.tab.c: minic.y
 	$(YACC) -d $^
