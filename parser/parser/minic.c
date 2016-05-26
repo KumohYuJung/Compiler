@@ -518,10 +518,10 @@ char *yytext;
 #line 1 "minic.l"
 #line 2 "minic.l"
 	#include <stdlib.h>
-	#include "minic.h"
+	#include <stdio.h>
 	#include "minic.tab.h"
 
-	void yyerror(char *s);
+	char* toString(char *string);
 #line 526 "<stdout>"
 
 #define INITIAL 0
@@ -793,132 +793,132 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 14 "minic.l"
-return INT;
+return TINT;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
 #line 15 "minic.l"
-return VOID;
+return TVOID;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 16 "minic.l"
-return CONST;
+return TCONST;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 17 "minic.l"
-return WHILE;
+return TWHILE;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 18 "minic.l"
-return FOR;
+return TFOR;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 19 "minic.l"
-return IF;
+return TIF;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 20 "minic.l"
-return ELSE;
+return TELSE;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 21 "minic.l"
-return SWITCH;
+return TSWITCH;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 22 "minic.l"
-return CONTINUE;
+return TCONTINUE;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 23 "minic.l"
-return BREAK;
+return TBREAK;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 24 "minic.l"
-return RETURN;
+return TRETURN;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 25 "minic.l"
-return CASE;
+return TCASE;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 26 "minic.l"
-return DEFAULT;
+return TDEFAULT;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 27 "minic.l"
-return INC;
+return TINC;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 28 "minic.l"
-return DEC;
+return TDEC;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 29 "minic.l"
-return ADDASSIGN;
+return TADDASSIGN;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 30 "minic.l"
-return SUBASSIGN;
+return TSUBASSIGN;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 31 "minic.l"
-return MULASSIGN;
+return TMULASSIGN;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 32 "minic.l"
-return MODASSIGN;
+return TMODASSIGN;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 33 "minic.l"
-return DIVASSIGN;
+return TDIVASSIGN;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
 #line 34 "minic.l"
-return OR;
+return TOR;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 35 "minic.l"
-return AND;
+return TAND;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 36 "minic.l"
-return GE;
+return TGE;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 37 "minic.l"
-return LE;
+return TLE;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 38 "minic.l"
-return EQ;
+return TEQ;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 39 "minic.l"
-return NE;
+return TNE;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
@@ -943,16 +943,16 @@ case 30:
 YY_RULE_SETUP
 #line 48 "minic.l"
 { 
-	yylval.iValue = atoi( yytext );
-	return INTEGER;
+	yylval.string = toString(yytext);
+	return TINTEGER;
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
 #line 52 "minic.l"
 {
-	yylval.string = yytext;
-	return IDENTITY;
+	yylval.string = toString(yytext);
+	return TIDENTITY;
 }
 	YY_BREAK
 case 32:
@@ -964,14 +964,16 @@ YY_RULE_SETUP
 case 33:
 YY_RULE_SETUP
 #line 58 "minic.l"
-yyerror("Unknown Character!\n");
+{
+	printf("I don't know what this means : %s.\n",yytext);
+}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 60 "minic.l"
+#line 61 "minic.l"
 ECHO;
 	YY_BREAK
-#line 975 "<stdout>"
+#line 977 "<stdout>"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1968,7 +1970,12 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 60 "minic.l"
+#line 61 "minic.l"
 
 
+
+int yywrap()
+{
+	return 1;
+}
 

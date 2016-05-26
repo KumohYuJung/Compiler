@@ -39,71 +39,69 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     INTEGER = 258,
-     IDENTITY = 259,
-     INT = 260,
-     VOID = 261,
-     CONST = 262,
-     WHILE = 263,
-     FOR = 264,
-     IF = 265,
-     SWITCH = 266,
-     CONTINUE = 267,
-     BREAK = 268,
-     RETURN = 269,
-     CASE = 270,
-     DEFAULT = 271,
-     INC = 272,
-     DEC = 273,
-     ADDASSIGN = 274,
-     SUBASSIGN = 275,
-     MULASSIGN = 276,
-     MODASSIGN = 277,
-     DIVASSIGN = 278,
-     OR = 279,
-     AND = 280,
-     IFX = 281,
-     CASEX = 282,
-     ELSE = 283,
-     NE = 284,
-     EQ = 285,
-     LE = 286,
-     GE = 287,
-     UMINUS = 288
+     TINTEGER = 258,
+     TIDENTITY = 259,
+     TINT = 260,
+     TVOID = 261,
+     TCONST = 262,
+     TWHILE = 263,
+     TFOR = 264,
+     TIF = 265,
+     TSWITCH = 266,
+     TCONTINUE = 267,
+     TBREAK = 268,
+     TRETURN = 269,
+     TCASE = 270,
+     TDEFAULT = 271,
+     TINC = 272,
+     TDEC = 273,
+     TADDASSIGN = 274,
+     TSUBASSIGN = 275,
+     TMULASSIGN = 276,
+     TMODASSIGN = 277,
+     TDIVASSIGN = 278,
+     TOR = 279,
+     TAND = 280,
+     TIFX = 281,
+     TELSE = 282,
+     TNE = 283,
+     TEQ = 284,
+     TLE = 285,
+     TGE = 286,
+     TUMINUS = 287
    };
 #endif
 /* Tokens.  */
-#define INTEGER 258
-#define IDENTITY 259
-#define INT 260
-#define VOID 261
-#define CONST 262
-#define WHILE 263
-#define FOR 264
-#define IF 265
-#define SWITCH 266
-#define CONTINUE 267
-#define BREAK 268
-#define RETURN 269
-#define CASE 270
-#define DEFAULT 271
-#define INC 272
-#define DEC 273
-#define ADDASSIGN 274
-#define SUBASSIGN 275
-#define MULASSIGN 276
-#define MODASSIGN 277
-#define DIVASSIGN 278
-#define OR 279
-#define AND 280
-#define IFX 281
-#define CASEX 282
-#define ELSE 283
-#define NE 284
-#define EQ 285
-#define LE 286
-#define GE 287
-#define UMINUS 288
+#define TINTEGER 258
+#define TIDENTITY 259
+#define TINT 260
+#define TVOID 261
+#define TCONST 262
+#define TWHILE 263
+#define TFOR 264
+#define TIF 265
+#define TSWITCH 266
+#define TCONTINUE 267
+#define TBREAK 268
+#define TRETURN 269
+#define TCASE 270
+#define TDEFAULT 271
+#define TINC 272
+#define TDEC 273
+#define TADDASSIGN 274
+#define TSUBASSIGN 275
+#define TMULASSIGN 276
+#define TMODASSIGN 277
+#define TDIVASSIGN 278
+#define TOR 279
+#define TAND 280
+#define TIFX 281
+#define TELSE 282
+#define TNE 283
+#define TEQ 284
+#define TLE 285
+#define TGE 286
+#define TUMINUS 287
 
 
 
@@ -112,12 +110,11 @@
 typedef union YYSTYPE
 #line 14 "minic.y"
 {
-	int iValue;
 	char* string;
-	nodeType *nPtr;
+	struct nodeType *nPtr;
 }
 /* Line 1529 of yacc.c.  */
-#line 121 "minic.tab.h"
+#line 118 "minic.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
