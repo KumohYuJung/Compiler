@@ -108,7 +108,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 15 "minic.y"
+#line 14 "minic.y"
 {
 	char* string;
 	struct nodeType *nPtr;

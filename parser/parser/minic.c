@@ -518,10 +518,10 @@ char *yytext;
 #line 1 "minic.l"
 #line 2 "minic.l"
 	#include <stdlib.h>
-//	#include "minic.h"
+	#include <stdio.h>
 	#include "minic.tab.h"
 
-	void yyerror(char *s);
+	char* toString(char *string);
 #line 526 "<stdout>"
 
 #define INITIAL 0
@@ -943,7 +943,7 @@ case 30:
 YY_RULE_SETUP
 #line 48 "minic.l"
 { 
-	yylval.string = yytext;
+	yylval.string = toString(yytext);
 	return TINTEGER;
 }
 	YY_BREAK
@@ -951,7 +951,7 @@ case 31:
 YY_RULE_SETUP
 #line 52 "minic.l"
 {
-	yylval.string = yytext;
+	yylval.string = toString(yytext);
 	return TIDENTITY;
 }
 	YY_BREAK
@@ -964,14 +964,16 @@ YY_RULE_SETUP
 case 33:
 YY_RULE_SETUP
 #line 58 "minic.l"
-yyerror("Unknown Character!\n");
+{
+	printf("I don't know what this means : %s.\n",yytext);
+}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 60 "minic.l"
+#line 61 "minic.l"
 ECHO;
 	YY_BREAK
-#line 975 "<stdout>"
+#line 977 "<stdout>"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1968,7 +1970,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 60 "minic.l"
+#line 61 "minic.l"
 
 
 

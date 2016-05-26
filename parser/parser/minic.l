@@ -1,9 +1,9 @@
 %{
 	#include <stdlib.h>
-//	#include "minic.h"
+	#include <stdio.h>
 	#include "minic.tab.h"
 
-	void yyerror(char *s);
+	char* toString(char *string);
 %}
 
 DIGIT 	[1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]+)?
@@ -46,17 +46,18 @@ ID	[A-Za-z_][A-Za-z0-9_]*
 "/*"([^*]|\*+[^*/])*\**"*/" ;
 
 {DIGIT}	{ 
-	yylval.string = yytext;
+	yylval.string = toString(yytext);
 	return TINTEGER;
 }
 {ID}	{
-	yylval.string = yytext;
+	yylval.string = toString(yytext);
 	return TIDENTITY;
 }
 
 [ \t\n]    ;
-.  yyerror("Unknown Character!\n");
-
+.  {
+	printf("I don't know what this means : %s.\n",yytext);
+}
 %%
 
 int yywrap()
