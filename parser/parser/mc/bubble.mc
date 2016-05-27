@@ -1,4 +1,3 @@
-
 void main(){
 	int list[100];
 	int element;
