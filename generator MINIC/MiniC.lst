@@ -1,0 +1,5418 @@
+    1 DIRECTIVE       BUILD_TREES -> ON;
+    2                 LIST_STATES -> ON;
+    3                 
+    4 LEXICON         '%ident'  => IDENT;
+    5                 '%number' => NUMBER;
+    6 
+    7 SYNTAX mini_c
+    8 
+    9 mini_c           -> translation_unit                       => PROGRAM;
+   10 translation_unit -> external_dcl;
+   11                  -> translation_unit external_dcl;
+   12 external_dcl     -> function_def;
+   13                  -> declaration;
+   14 
+   15 function_def     -> function_header compound_st            => FUNC_DEF;
+   16 function_header  -> dcl_spec function_name formal_param    => FUNC_HEAD;
+   17 dcl_spec         -> dcl_specifiers                         => DCL_SPEC;
+   18 dcl_specifiers   -> dcl_specifier;
+   19                  -> dcl_specifiers dcl_specifier;
+   20 dcl_specifier    -> type_qualifier;
+   21                  -> type_specifier;
+   22 type_qualifier   -> 'const'                                => CONST_TYPE;
+   23 type_specifier   -> 'int'                                  => INT_TYPE;
+   24                  -> 'void'                                 => VOID_TYPE;
+   25 function_name    -> '%ident';
+   26 formal_param     -> '(' opt_formal_param ')'               => FORMAL_PARA;
+   27 opt_formal_param -> formal_param_list;
+   28                  -> ;
+   29 formal_param_list-> param_dcl;
+   30                  -> formal_param_list ',' param_dcl;
+   31 param_dcl        -> dcl_spec declarator                    => PARAM_DCL;
+   32 
+   33 compound_st      -> '{' opt_dcl_list opt_stat_list '}'     => COMPOUND_ST;
+   34 opt_dcl_list     -> declaration_list                       => DCL_LIST;
+   35                  ->                                        => DCL_LIST;
+   36 declaration_list -> declaration;
+   37                  -> declaration_list declaration;
+   38 declaration      -> dcl_spec init_dcl_list ';'             => DCL;
+   39 init_dcl_list    -> init_declarator;
+   40                  -> init_dcl_list ',' init_declarator;
+   41 init_declarator  -> declarator                             => DCL_ITEM;
+   42                  -> declarator '=' '%number'               => DCL_ITEM;
+   43 declarator       -> '%ident'                               => SIMPLE_VAR;
+   44                  -> '%ident' '[' opt_number ']'            => ARRAY_VAR;
+   45 opt_number       -> '%number';
+   46                  -> ;
+   47                  
+   48 opt_stat_list    -> statement_list                         => STAT_LIST;
+   49                  -> ;
+   50 statement_list   -> statement;
+   51                  -> statement_list statement;
+   52 statement        -> compound_st;
+   53                  -> expression_st;
+   54                  -> condition_st;
+   55                  -> loop_st;
+   56                  -> flow_st;
+   57 loop_st          -> for_st;
+   58                  -> while_st;
+   59 condition_st     -> if_st;
+   60                  -> switch_st;
+   61 flow_st          -> return_st;
+   62                  -> continue_st;
+   63                  -> break_st;
+   64 expression_st    -> opt_expression ';'                     => EXP_ST;
+   65 opt_expression   -> expression;
+   66                  -> ;
+   67 if_st            -> 'if' '(' expression ')' statement      => IF_ST;
+   68                  -> 'if' '(' expression ')' statement
+   69                     'else' statement                       => IF_ELSE_ST;
+   70 while_st         -> 'while' '(' expression ')' statement   => WHILE_ST;
+   71 return_st        -> 'return' opt_expression ';'            => RETURN_ST;
+   72 continue_st      -> 'continue' ';'                         => CONTINUE_ST;
+   73 break_st         -> 'break' ';'                            => BREAK_ST;
+   74 for_st           -> 'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement => FOR_ST;
+   75 for_dcl          -> for_dcl_list                      => FOR_DCL;
+   76                  ->                                   => FOR_DCL;
+   77 for_dcl_list     -> for_dcl_list ',' init_declarator;
+   78                  -> init_declarator;                   
+   79 for_exp          -> logical_or_exp                        => FOR_EXP;
+   80                  ->                                      => FOR_EXP;
+   81 for_inc          -> for_inc_list                        => FOR_INC;
+   82                  ->                                    => FOR_INC;
+   83 for_inc_list     -> assignment_exp;
+   84                  -> for_inc_list ',' assignment_exp;
+   85 switch_st        -> 'switch' '(' declarator ')' '{' switch_case_list '}' => SWITCH_ST;
+   86 switch_case_list -> switch_case_list switch_case;
+   87                  -> switch_case;
+   88 switch_case      -> 'case' '%number' ':' statement_list     => CASE_ST;
+   89                  -> 'case' '%number'                        => CASE_ST;
+   90                  -> 'default' ':' statement_list            => DEFAULT_ST;
+   91                  -> 'default' ':'                           => DEFAULT_ST;
+   92 expression       -> assignment_exp;
+   93 assignment_exp   -> logical_or_exp;
+   94                  -> unary_exp '=' assignment_exp           => ASSIGN_OP;
+   95                  -> unary_exp '+=' assignment_exp          => ADD_ASSIGN;
+   96                  -> unary_exp '-=' assignment_exp          => SUB_ASSIGN;
+   97                  -> unary_exp '*=' assignment_exp          => MUL_ASSIGN;
+   98                  -> unary_exp '/=' assignment_exp          => DIV_ASSIGN;
+   99                  -> unary_exp '%=' assignment_exp          => MOD_ASSIGN;
+  100 logical_or_exp   -> logical_and_exp;
+  101                  -> logical_or_exp '||' logical_and_exp    => LOGICAL_OR;
+  102 logical_and_exp  -> equality_exp;
+  103                  -> logical_and_exp '&&' equality_exp      => LOGICAL_AND;
+  104 equality_exp     -> relational_exp;
+  105                  -> equality_exp '==' relational_exp       => EQ;
+  106                  -> equality_exp '!=' relational_exp       => NE;
+  107 relational_exp   -> additive_exp;
+  108                  -> relational_exp '>' additive_exp        => GT;
+  109                  -> relational_exp '<' additive_exp        => LT;
+  110                  -> relational_exp '>=' additive_exp       => GE;
+  111                  -> relational_exp '<=' additive_exp       => LE;
+  112 additive_exp     -> multiplicative_exp;
+  113                  -> additive_exp '+' multiplicative_exp    => ADD;
+  114                  -> additive_exp '-' multiplicative_exp    => SUB;
+  115 multiplicative_exp -> unary_exp;
+  116                    -> multiplicative_exp '*' unary_exp     => MUL;
+  117                    -> multiplicative_exp '/' unary_exp     => DIV;
+  118                    -> multiplicative_exp '%' unary_exp     => REMAINDER;
+  119 unary_exp          -> postfix_exp;
+  120                    -> '-' unary_exp                        => UNARY_MINUS;
+  121                    -> '!' unary_exp                        => LOGICAL_NOT;
+  122                    -> '++' unary_exp                       => PRE_INC;
+  123                    -> '--' unary_exp                       => PRE_DEC;
+  124 postfix_exp        -> primary_exp;
+  125                    -> postfix_exp '[' expression ']'       => INDEX;
+  126                    -> postfix_exp '(' opt_actual_param ')' => CALL;
+  127                    -> postfix_exp '++'                     => POST_INC;
+  128                    -> postfix_exp '--'                     => POST_DEC;
+  129 opt_actual_param   -> actual_param;
+  130                    -> ;
+  131 actual_param       -> actual_param_list                    => ACTUAL_PARAM;
+  132 actual_param_list  -> assignment_exp;
+  133                    -> actual_param_list ',' assignment_exp;
+  134 primary_exp        -> '%ident';
+  135                    -> '%number';
+  136                    -> '(' expression ')';                  
+ VALID SOURCE
+
+
+   Nonterminal:   1
+        Nonterminal:   2
+             Terminal:  BUILD_TREES(   2,   1,  17)
+             Terminal:  ON(   2,   1,  32)
+        Nonterminal:   2
+             Terminal:  LIST_STATES(   2,   2,  17)
+             Terminal:  ON(   2,   2,  32)
+   Nonterminal:   7
+        Nonterminal:   6
+             Nonterminal:  12
+                  Terminal:  '%ident'(   3,   4,  17)
+             Nonterminal:  14
+                  Terminal:  IDENT(   2,   4,  30)
+        Nonterminal:   6
+             Nonterminal:  12
+                  Terminal:  '%number'(   3,   5,  17)
+             Nonterminal:  14
+                  Terminal:  NUMBER(   2,   5,  30)
+   Nonterminal:   9
+   Nonterminal:   4
+        Terminal:  mini_c(   2,   7,   8)
+        Nonterminal:   8
+             Terminal:  mini_c(   2,   9,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  translation_unit(   2,   9,  21)
+                  Nonterminal:  14
+                       Terminal:  PROGRAM(   2,   9,  63)
+        Nonterminal:   8
+             Terminal:  translation_unit(   2,  10,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  external_dcl(   2,  10,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  translation_unit(   2,  11,  21)
+                       Terminal:  external_dcl(   2,  11,  38)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  external_dcl(   2,  12,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  function_def(   2,  12,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declaration(   2,  13,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  function_def(   2,  15,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  function_header(   2,  15,  21)
+                       Terminal:  compound_st(   2,  15,  37)
+                  Nonterminal:  14
+                       Terminal:  FUNC_DEF(   2,  15,  63)
+        Nonterminal:   8
+             Terminal:  function_header(   2,  16,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_spec(   2,  16,  21)
+                       Terminal:  function_name(   2,  16,  30)
+                       Terminal:  formal_param(   2,  16,  44)
+                  Nonterminal:  14
+                       Terminal:  FUNC_HEAD(   2,  16,  63)
+        Nonterminal:   8
+             Terminal:  dcl_spec(   2,  17,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_specifiers(   2,  17,  21)
+                  Nonterminal:  14
+                       Terminal:  DCL_SPEC(   2,  17,  63)
+        Nonterminal:   8
+             Terminal:  dcl_specifiers(   2,  18,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_specifier(   2,  18,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_specifiers(   2,  19,  21)
+                       Terminal:  dcl_specifier(   2,  19,  36)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  dcl_specifier(   2,  20,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  type_qualifier(   2,  20,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  type_specifier(   2,  21,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  type_qualifier(   2,  22,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'const'(   3,  22,  21)
+                  Nonterminal:  14
+                       Terminal:  CONST_TYPE(   2,  22,  63)
+        Nonterminal:   8
+             Terminal:  type_specifier(   2,  23,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'int'(   3,  23,  21)
+                  Nonterminal:  14
+                       Terminal:  INT_TYPE(   2,  23,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'void'(   3,  24,  21)
+                  Nonterminal:  14
+                       Terminal:  VOID_TYPE(   2,  24,  63)
+        Nonterminal:   8
+             Terminal:  function_name(   2,  25,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%ident'(   3,  25,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  formal_param(   2,  26,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '('(   3,  26,  21)
+                       Terminal:  opt_formal_param(   2,  26,  25)
+                       Terminal:  ')'(   3,  26,  42)
+                  Nonterminal:  14
+                       Terminal:  FORMAL_PARA(   2,  26,  63)
+        Nonterminal:   8
+             Terminal:  opt_formal_param(   2,  27,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  formal_param_list(   2,  27,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  formal_param_list(   2,  29,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  param_dcl(   2,  29,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  formal_param_list(   2,  30,  21)
+                       Terminal:  ','(   3,  30,  39)
+                       Terminal:  param_dcl(   2,  30,  43)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  param_dcl(   2,  31,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_spec(   2,  31,  21)
+                       Terminal:  declarator(   2,  31,  30)
+                  Nonterminal:  14
+                       Terminal:  PARAM_DCL(   2,  31,  63)
+        Nonterminal:   8
+             Terminal:  compound_st(   2,  33,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '{'(   3,  33,  21)
+                       Terminal:  opt_dcl_list(   2,  33,  25)
+                       Terminal:  opt_stat_list(   2,  33,  38)
+                       Terminal:  '}'(   3,  33,  52)
+                  Nonterminal:  14
+                       Terminal:  COMPOUND_ST(   2,  33,  63)
+        Nonterminal:   8
+             Terminal:  opt_dcl_list(   2,  34,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declaration_list(   2,  34,  21)
+                  Nonterminal:  14
+                       Terminal:  DCL_LIST(   2,  34,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+                       Terminal:  DCL_LIST(   2,  35,  63)
+        Nonterminal:   8
+             Terminal:  declaration_list(   2,  36,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declaration(   2,  36,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declaration_list(   2,  37,  21)
+                       Terminal:  declaration(   2,  37,  38)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  declaration(   2,  38,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_spec(   2,  38,  21)
+                       Terminal:  init_dcl_list(   2,  38,  30)
+                       Terminal:  ';'(   3,  38,  44)
+                  Nonterminal:  14
+                       Terminal:  DCL(   2,  38,  63)
+        Nonterminal:   8
+             Terminal:  init_dcl_list(   2,  39,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  init_declarator(   2,  39,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  init_dcl_list(   2,  40,  21)
+                       Terminal:  ','(   3,  40,  35)
+                       Terminal:  init_declarator(   2,  40,  39)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  init_declarator(   2,  41,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declarator(   2,  41,  21)
+                  Nonterminal:  14
+                       Terminal:  DCL_ITEM(   2,  41,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declarator(   2,  42,  21)
+                       Terminal:  '='(   3,  42,  32)
+                       Terminal:  '%number'(   3,  42,  36)
+                  Nonterminal:  14
+                       Terminal:  DCL_ITEM(   2,  42,  63)
+        Nonterminal:   8
+             Terminal:  declarator(   2,  43,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%ident'(   3,  43,  21)
+                  Nonterminal:  14
+                       Terminal:  SIMPLE_VAR(   2,  43,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%ident'(   3,  44,  21)
+                       Terminal:  '['(   3,  44,  30)
+                       Terminal:  opt_number(   2,  44,  34)
+                       Terminal:  ']'(   3,  44,  45)
+                  Nonterminal:  14
+                       Terminal:  ARRAY_VAR(   2,  44,  63)
+        Nonterminal:   8
+             Terminal:  opt_number(   2,  45,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%number'(   3,  45,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  opt_stat_list(   2,  48,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  statement_list(   2,  48,  21)
+                  Nonterminal:  14
+                       Terminal:  STAT_LIST(   2,  48,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  statement_list(   2,  50,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  statement(   2,  50,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  statement_list(   2,  51,  21)
+                       Terminal:  statement(   2,  51,  36)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  statement(   2,  52,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  compound_st(   2,  52,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  expression_st(   2,  53,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  condition_st(   2,  54,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  loop_st(   2,  55,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  flow_st(   2,  56,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  loop_st(   2,  57,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  for_st(   2,  57,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  while_st(   2,  58,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  condition_st(   2,  59,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  if_st(   2,  59,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  switch_st(   2,  60,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  flow_st(   2,  61,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  return_st(   2,  61,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  continue_st(   2,  62,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  break_st(   2,  63,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  expression_st(   2,  64,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  opt_expression(   2,  64,  21)
+                       Terminal:  ';'(   3,  64,  36)
+                  Nonterminal:  14
+                       Terminal:  EXP_ST(   2,  64,  63)
+        Nonterminal:   8
+             Terminal:  opt_expression(   2,  65,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  expression(   2,  65,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  if_st(   2,  67,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'if'(   3,  67,  21)
+                       Terminal:  '('(   3,  67,  26)
+                       Terminal:  expression(   2,  67,  30)
+                       Terminal:  ')'(   3,  67,  41)
+                       Terminal:  statement(   2,  67,  45)
+                  Nonterminal:  14
+                       Terminal:  IF_ST(   2,  67,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'if'(   3,  68,  21)
+                       Terminal:  '('(   3,  68,  26)
+                       Terminal:  expression(   2,  68,  30)
+                       Terminal:  ')'(   3,  68,  41)
+                       Terminal:  statement(   2,  68,  45)
+                       Terminal:  'else'(   3,  69,  21)
+                       Terminal:  statement(   2,  69,  28)
+                  Nonterminal:  14
+                       Terminal:  IF_ELSE_ST(   2,  69,  63)
+        Nonterminal:   8
+             Terminal:  while_st(   2,  70,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'while'(   3,  70,  21)
+                       Terminal:  '('(   3,  70,  29)
+                       Terminal:  expression(   2,  70,  33)
+                       Terminal:  ')'(   3,  70,  44)
+                       Terminal:  statement(   2,  70,  48)
+                  Nonterminal:  14
+                       Terminal:  WHILE_ST(   2,  70,  63)
+        Nonterminal:   8
+             Terminal:  return_st(   2,  71,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'return'(   3,  71,  21)
+                       Terminal:  opt_expression(   2,  71,  30)
+                       Terminal:  ';'(   3,  71,  45)
+                  Nonterminal:  14
+                       Terminal:  RETURN_ST(   2,  71,  63)
+        Nonterminal:   8
+             Terminal:  continue_st(   2,  72,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'continue'(   3,  72,  21)
+                       Terminal:  ';'(   3,  72,  32)
+                  Nonterminal:  14
+                       Terminal:  CONTINUE_ST(   2,  72,  63)
+        Nonterminal:   8
+             Terminal:  break_st(   2,  73,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'break'(   3,  73,  21)
+                       Terminal:  ';'(   3,  73,  29)
+                  Nonterminal:  14
+                       Terminal:  BREAK_ST(   2,  73,  63)
+        Nonterminal:   8
+             Terminal:  for_st(   2,  74,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'for'(   3,  74,  21)
+                       Terminal:  '('(   3,  74,  27)
+                       Terminal:  for_dcl(   2,  74,  31)
+                       Terminal:  ';'(   3,  74,  39)
+                       Terminal:  for_exp(   2,  74,  43)
+                       Terminal:  ';'(   3,  74,  51)
+                       Terminal:  for_inc(   2,  74,  55)
+                       Terminal:  ')'(   3,  74,  63)
+                       Terminal:  statement(   2,  74,  67)
+                  Nonterminal:  14
+                       Terminal:  FOR_ST(   2,  74,  80)
+        Nonterminal:   8
+             Terminal:  for_dcl(   2,  75,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  for_dcl_list(   2,  75,  21)
+                  Nonterminal:  14
+                       Terminal:  FOR_DCL(   2,  75,  58)
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+                       Terminal:  FOR_DCL(   2,  76,  58)
+        Nonterminal:   8
+             Terminal:  for_dcl_list(   2,  77,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  for_dcl_list(   2,  77,  21)
+                       Terminal:  ','(   3,  77,  34)
+                       Terminal:  init_declarator(   2,  77,  38)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  init_declarator(   2,  78,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  for_exp(   2,  79,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  logical_or_exp(   2,  79,  21)
+                  Nonterminal:  14
+                       Terminal:  FOR_EXP(   2,  79,  62)
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+                       Terminal:  FOR_EXP(   2,  80,  61)
+        Nonterminal:   8
+             Terminal:  for_inc(   2,  81,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  for_inc_list(   2,  81,  21)
+                  Nonterminal:  14
+                       Terminal:  FOR_INC(   2,  81,  60)
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+                       Terminal:  FOR_INC(   2,  82,  59)
+        Nonterminal:   8
+             Terminal:  for_inc_list(   2,  83,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  assignment_exp(   2,  83,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  for_inc_list(   2,  84,  21)
+                       Terminal:  ','(   3,  84,  34)
+                       Terminal:  assignment_exp(   2,  84,  38)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  switch_st(   2,  85,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'switch'(   3,  85,  21)
+                       Terminal:  '('(   3,  85,  30)
+                       Terminal:  declarator(   2,  85,  34)
+                       Terminal:  ')'(   3,  85,  45)
+                       Terminal:  '{'(   3,  85,  49)
+                       Terminal:  switch_case_list(   2,  85,  53)
+                       Terminal:  '}'(   3,  85,  70)
+                  Nonterminal:  14
+                       Terminal:  SWITCH_ST(   2,  85,  77)
+        Nonterminal:   8
+             Terminal:  switch_case_list(   2,  86,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  switch_case_list(   2,  86,  21)
+                       Terminal:  switch_case(   2,  86,  38)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  switch_case(   2,  87,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  switch_case(   2,  88,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'case'(   3,  88,  21)
+                       Terminal:  '%number'(   3,  88,  28)
+                       Terminal:  ':'(   3,  88,  38)
+                       Terminal:  statement_list(   2,  88,  42)
+                  Nonterminal:  14
+                       Terminal:  CASE_ST(   2,  88,  64)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'case'(   3,  89,  21)
+                       Terminal:  '%number'(   3,  89,  28)
+                  Nonterminal:  14
+                       Terminal:  CASE_ST(   2,  89,  64)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'default'(   3,  90,  21)
+                       Terminal:  ':'(   3,  90,  31)
+                       Terminal:  statement_list(   2,  90,  35)
+                  Nonterminal:  14
+                       Terminal:  DEFAULT_ST(   2,  90,  64)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'default'(   3,  91,  21)
+                       Terminal:  ':'(   3,  91,  31)
+                  Nonterminal:  14
+                       Terminal:  DEFAULT_ST(   2,  91,  64)
+        Nonterminal:   8
+             Terminal:  expression(   2,  92,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  assignment_exp(   2,  92,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  assignment_exp(   2,  93,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  logical_or_exp(   2,  93,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  94,  21)
+                       Terminal:  '='(   3,  94,  31)
+                       Terminal:  assignment_exp(   2,  94,  35)
+                  Nonterminal:  14
+                       Terminal:  ASSIGN_OP(   2,  94,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  95,  21)
+                       Terminal:  '+='(   3,  95,  31)
+                       Terminal:  assignment_exp(   2,  95,  36)
+                  Nonterminal:  14
+                       Terminal:  ADD_ASSIGN(   2,  95,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  96,  21)
+                       Terminal:  '-='(   3,  96,  31)
+                       Terminal:  assignment_exp(   2,  96,  36)
+                  Nonterminal:  14
+                       Terminal:  SUB_ASSIGN(   2,  96,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  97,  21)
+                       Terminal:  '*='(   3,  97,  31)
+                       Terminal:  assignment_exp(   2,  97,  36)
+                  Nonterminal:  14
+                       Terminal:  MUL_ASSIGN(   2,  97,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  98,  21)
+                       Terminal:  '/='(   3,  98,  31)
+                       Terminal:  assignment_exp(   2,  98,  36)
+                  Nonterminal:  14
+                       Terminal:  DIV_ASSIGN(   2,  98,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  99,  21)
+                       Terminal:  '%='(   3,  99,  31)
+                       Terminal:  assignment_exp(   2,  99,  36)
+                  Nonterminal:  14
+                       Terminal:  MOD_ASSIGN(   2,  99,  63)
+        Nonterminal:   8
+             Terminal:  logical_or_exp(   2, 100,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  logical_and_exp(   2, 100,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  logical_or_exp(   2, 101,  21)
+                       Terminal:  '||'(   3, 101,  36)
+                       Terminal:  logical_and_exp(   2, 101,  41)
+                  Nonterminal:  14
+                       Terminal:  LOGICAL_OR(   2, 101,  63)
+        Nonterminal:   8
+             Terminal:  logical_and_exp(   2, 102,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  equality_exp(   2, 102,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  logical_and_exp(   2, 103,  21)
+                       Terminal:  '&&'(   3, 103,  37)
+                       Terminal:  equality_exp(   2, 103,  42)
+                  Nonterminal:  14
+                       Terminal:  LOGICAL_AND(   2, 103,  63)
+        Nonterminal:   8
+             Terminal:  equality_exp(   2, 104,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  relational_exp(   2, 104,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  equality_exp(   2, 105,  21)
+                       Terminal:  '=='(   3, 105,  34)
+                       Terminal:  relational_exp(   2, 105,  39)
+                  Nonterminal:  14
+                       Terminal:  EQ(   2, 105,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  equality_exp(   2, 106,  21)
+                       Terminal:  '!='(   3, 106,  34)
+                       Terminal:  relational_exp(   2, 106,  39)
+                  Nonterminal:  14
+                       Terminal:  NE(   2, 106,  63)
+        Nonterminal:   8
+             Terminal:  relational_exp(   2, 107,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  additive_exp(   2, 107,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  relational_exp(   2, 108,  21)
+                       Terminal:  '>'(   3, 108,  36)
+                       Terminal:  additive_exp(   2, 108,  40)
+                  Nonterminal:  14
+                       Terminal:  GT(   2, 108,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  relational_exp(   2, 109,  21)
+                       Terminal:  '<'(   3, 109,  36)
+                       Terminal:  additive_exp(   2, 109,  40)
+                  Nonterminal:  14
+                       Terminal:  LT(   2, 109,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  relational_exp(   2, 110,  21)
+                       Terminal:  '>='(   3, 110,  36)
+                       Terminal:  additive_exp(   2, 110,  41)
+                  Nonterminal:  14
+                       Terminal:  GE(   2, 110,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  relational_exp(   2, 111,  21)
+                       Terminal:  '<='(   3, 111,  36)
+                       Terminal:  additive_exp(   2, 111,  41)
+                  Nonterminal:  14
+                       Terminal:  LE(   2, 111,  63)
+        Nonterminal:   8
+             Terminal:  additive_exp(   2, 112,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  multiplicative_exp(   2, 112,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  additive_exp(   2, 113,  21)
+                       Terminal:  '+'(   3, 113,  34)
+                       Terminal:  multiplicative_exp(   2, 113,  38)
+                  Nonterminal:  14
+                       Terminal:  ADD(   2, 113,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  additive_exp(   2, 114,  21)
+                       Terminal:  '-'(   3, 114,  34)
+                       Terminal:  multiplicative_exp(   2, 114,  38)
+                  Nonterminal:  14
+                       Terminal:  SUB(   2, 114,  63)
+        Nonterminal:   8
+             Terminal:  multiplicative_exp(   2, 115,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2, 115,  23)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  multiplicative_exp(   2, 116,  23)
+                       Terminal:  '*'(   3, 116,  42)
+                       Terminal:  unary_exp(   2, 116,  46)
+                  Nonterminal:  14
+                       Terminal:  MUL(   2, 116,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  multiplicative_exp(   2, 117,  23)
+                       Terminal:  '/'(   3, 117,  42)
+                       Terminal:  unary_exp(   2, 117,  46)
+                  Nonterminal:  14
+                       Terminal:  DIV(   2, 117,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  multiplicative_exp(   2, 118,  23)
+                       Terminal:  '%'(   3, 118,  42)
+                       Terminal:  unary_exp(   2, 118,  46)
+                  Nonterminal:  14
+                       Terminal:  REMAINDER(   2, 118,  63)
+        Nonterminal:   8
+             Terminal:  unary_exp(   2, 119,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  postfix_exp(   2, 119,  23)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '-'(   3, 120,  23)
+                       Terminal:  unary_exp(   2, 120,  27)
+                  Nonterminal:  14
+                       Terminal:  UNARY_MINUS(   2, 120,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '!'(   3, 121,  23)
+                       Terminal:  unary_exp(   2, 121,  27)
+                  Nonterminal:  14
+                       Terminal:  LOGICAL_NOT(   2, 121,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '++'(   3, 122,  23)
+                       Terminal:  unary_exp(   2, 122,  28)
+                  Nonterminal:  14
+                       Terminal:  PRE_INC(   2, 122,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '--'(   3, 123,  23)
+                       Terminal:  unary_exp(   2, 123,  28)
+                  Nonterminal:  14
+                       Terminal:  PRE_DEC(   2, 123,  63)
+        Nonterminal:   8
+             Terminal:  postfix_exp(   2, 124,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  primary_exp(   2, 124,  23)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  postfix_exp(   2, 125,  23)
+                       Terminal:  '['(   3, 125,  35)
+                       Terminal:  expression(   2, 125,  39)
+                       Terminal:  ']'(   3, 125,  50)
+                  Nonterminal:  14
+                       Terminal:  INDEX(   2, 125,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  postfix_exp(   2, 126,  23)
+                       Terminal:  '('(   3, 126,  35)
+                       Terminal:  opt_actual_param(   2, 126,  39)
+                       Terminal:  ')'(   3, 126,  56)
+                  Nonterminal:  14
+                       Terminal:  CALL(   2, 126,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  postfix_exp(   2, 127,  23)
+                       Terminal:  '++'(   3, 127,  35)
+                  Nonterminal:  14
+                       Terminal:  POST_INC(   2, 127,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  postfix_exp(   2, 128,  23)
+                       Terminal:  '--'(   3, 128,  35)
+                  Nonterminal:  14
+                       Terminal:  POST_DEC(   2, 128,  63)
+        Nonterminal:   8
+             Terminal:  opt_actual_param(   2, 129,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  actual_param(   2, 129,  23)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  actual_param(   2, 131,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  actual_param_list(   2, 131,  23)
+                  Nonterminal:  14
+                       Terminal:  ACTUAL_PARAM(   2, 131,  63)
+        Nonterminal:   8
+             Terminal:  actual_param_list(   2, 132,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  assignment_exp(   2, 132,  23)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  actual_param_list(   2, 133,  23)
+                       Terminal:  ','(   3, 133,  41)
+                       Terminal:  assignment_exp(   2, 133,  45)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  primary_exp(   2, 134,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%ident'(   3, 134,  23)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%number'(   3, 135,  23)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '('(   3, 136,  23)
+                       Terminal:  expression(   2, 136,  27)
+                       Terminal:  ')'(   3, 136,  38)
+                  Nonterminal:  14
+
+ ******** TERMINAL    SYMBOL ********
+
+ '!'          '!='         '%'          '%='         '%ident'     '%number'   
+ '&&'         '('          ')'          '*'          '*='         '+'         
+ '++'         '+='         ','          '-'          '--'         '-='        
+ '/'          '/='         ':'          ';'          '<'          '<='        
+ '='          '=='         '>'          '>='         '['          ']'         
+ '_|_'        'break'      'case'       'const'      'continue'   'default'   
+ 'else'       'for'        'if'         'int'        'return'     'switch'    
+ 'void'       'while'      '{'          '||'         '}'         
+
+ ******** NONTERMINAL SYMBOL ********
+
+ actual_param       actual_param_list  additive_exp       assignment_exp    
+ break_st           compound_st        condition_st       continue_st       
+ dcl_spec           dcl_specifier      dcl_specifiers     declaration       
+ declaration_list   declarator         equality_exp       expression        
+ expression_st      external_dcl       flow_st            for_dcl           
+ for_dcl_list       for_exp            for_inc            for_inc_list      
+ for_st             formal_param       formal_param_list  function_def      
+ function_header    function_name      if_st              init_dcl_list     
+ init_declarator    logical_and_exp    logical_or_exp     loop_st           
+ mini_c             mini_c$            multiplicative_exp opt_actual_param  
+ opt_dcl_list       opt_expression     opt_formal_param   opt_number        
+ opt_stat_list      param_dcl          postfix_exp        primary_exp       
+ relational_exp     return_st          statement          statement_list    
+ switch_case        switch_case_list   switch_st          translation_unit  
+ type_qualifier     type_specifier     unary_exp          while_st          
+
+ ******** Node        Values ********
+ enum nodeName = {
+  ACTUAL_PARAM,  ADD,  ADD_ASSIGN,  ARRAY_VAR,  ASSIGN_OP,  BREAK_ST,  CALL,
+   CASE_ST,  COMPOUND_ST,  CONST_TYPE,  CONTINUE_ST,  DCL,  DCL_ITEM,  DCL_LIST,
+   DCL_SPEC,  DEFAULT_ST,  DIV,  DIV_ASSIGN,  EQ,  ERROR,  EXP_ST,  FORMAL_PARA,
+   FOR_DCL,  FOR_EXP,  FOR_INC,  FOR_ST,  FUNC_DEF,  FUNC_HEAD,  GE,  GT,  IDENT,
+   IF_ELSE_ST,  IF_ST,  INDEX,  INT_TYPE,  LE,  LOGICAL_AND,  LOGICAL_NOT,
+   LOGICAL_OR,  LT,  MOD_ASSIGN,  MUL,  MUL_ASSIGN,  NE,  NUMBER,  PARAM_DCL,
+   POST_DEC,  POST_INC,  PRE_DEC,  PRE_INC,  PROGRAM,  REMAINDER,  RETURN_ST,
+   SIMPLE_VAR,  STAT_LIST,  SUB,  SUB_ASSIGN,  SWITCH_ST,  UNARY_MINUS,
+   VOID_TYPE,  WHILE_ST};
+
+
+ **************************************
+ *      Pretty     Print              *
+ **************************************
+
+ DIRECTIVE 
+   BUILD_TREES             ->  ON;
+   LIST_STATES ->  ON;
+ LEXICON
+   '%ident'                                                     =>  IDENT;
+   '%number'                                                    =>  NUMBER;
+ SYNTAX  mini_c
+ mini_c                                        -- RULE NUMBER:  1
+  ->  translation_unit                                            =>  PROGRAM;
+ translation_unit                              -- RULE NUMBER:  2
+  ->  external_dcl ;
+  ->  translation_unit  external_dcl ;
+ external_dcl                                  -- RULE NUMBER:  4
+  ->  function_def ;
+  ->  declaration ;
+ function_def                                  -- RULE NUMBER:  6
+  ->  function_header  compound_st                                =>  FUNC_DEF;
+ function_header                               -- RULE NUMBER:  7
+  ->  dcl_spec  function_name  formal_param                       =>  FUNC_HEAD;
+ dcl_spec                                      -- RULE NUMBER:  8
+  ->  dcl_specifiers                                              =>  DCL_SPEC;
+ dcl_specifiers                                -- RULE NUMBER:  9
+  ->  dcl_specifier ;
+  ->  dcl_specifiers  dcl_specifier ;
+ dcl_specifier                                 -- RULE NUMBER: 11
+  ->  type_qualifier ;
+  ->  type_specifier ;
+ type_qualifier                                -- RULE NUMBER: 13
+  ->  'const'                                                     =>  CONST_TYPE;
+ type_specifier                                -- RULE NUMBER: 14
+  ->  'int'                                                       =>  INT_TYPE;
+  ->  'void'                                                      =>  VOID_TYPE;
+ function_name                                 -- RULE NUMBER: 16
+  ->  '%ident' ;
+ formal_param                                  -- RULE NUMBER: 17
+  ->  '('  opt_formal_param  ')'                                  =>  FORMAL_PARA;
+ opt_formal_param                              -- RULE NUMBER: 18
+  ->  formal_param_list ;
+  -> ;
+ formal_param_list                             -- RULE NUMBER: 20
+  ->  param_dcl ;
+  ->  formal_param_list  ','  param_dcl ;
+ param_dcl                                     -- RULE NUMBER: 22
+  ->  dcl_spec  declarator                                        =>  PARAM_DCL;
+ compound_st                                   -- RULE NUMBER: 23
+  ->  '{'  opt_dcl_list  opt_stat_list  '}'                       =>  COMPOUND_ST;
+ opt_dcl_list                                  -- RULE NUMBER: 24
+  ->  declaration_list                                            =>  DCL_LIST;
+  ->                                                              =>  DCL_LIST;
+ declaration_list                              -- RULE NUMBER: 26
+  ->  declaration ;
+  ->  declaration_list  declaration ;
+ declaration                                   -- RULE NUMBER: 28
+  ->  dcl_spec  init_dcl_list  ';'                                =>  DCL;
+ init_dcl_list                                 -- RULE NUMBER: 29
+  ->  init_declarator ;
+  ->  init_dcl_list  ','  init_declarator ;
+ init_declarator                               -- RULE NUMBER: 31
+  ->  declarator                                                  =>  DCL_ITEM;
+  ->  declarator  '='  '%number'                                  =>  DCL_ITEM;
+ declarator                                    -- RULE NUMBER: 33
+  ->  '%ident'                                                    =>  SIMPLE_VAR;
+  ->  '%ident'  '['  opt_number  ']'                              =>  ARRAY_VAR;
+ opt_number                                    -- RULE NUMBER: 35
+  ->  '%number' ;
+  -> ;
+ opt_stat_list                                 -- RULE NUMBER: 37
+  ->  statement_list                                              =>  STAT_LIST;
+  -> ;
+ statement_list                                -- RULE NUMBER: 39
+  ->  statement ;
+  ->  statement_list  statement ;
+ statement                                     -- RULE NUMBER: 41
+  ->  compound_st ;
+  ->  expression_st ;
+  ->  condition_st ;
+  ->  loop_st ;
+  ->  flow_st ;
+ loop_st                                       -- RULE NUMBER: 46
+  ->  for_st ;
+  ->  while_st ;
+ condition_st                                  -- RULE NUMBER: 48
+  ->  if_st ;
+  ->  switch_st ;
+ flow_st                                       -- RULE NUMBER: 50
+  ->  return_st ;
+  ->  continue_st ;
+  ->  break_st ;
+ expression_st                                 -- RULE NUMBER: 53
+  ->  opt_expression  ';'                                         =>  EXP_ST;
+ opt_expression                                -- RULE NUMBER: 54
+  ->  expression ;
+  -> ;
+ if_st                                         -- RULE NUMBER: 56
+  ->  'if'  '('  expression  ')'  statement                       =>  IF_ST;
+  ->  'if'  '('  expression  ')'  statement  'else'  statement    =>  IF_ELSE_ST;
+ while_st                                      -- RULE NUMBER: 58
+  ->  'while'  '('  expression  ')'  statement                    =>  WHILE_ST;
+ return_st                                     -- RULE NUMBER: 59
+  ->  'return'  opt_expression  ';'                               =>  RETURN_ST;
+ continue_st                                   -- RULE NUMBER: 60
+  ->  'continue'  ';'                                             =>  CONTINUE_ST;
+ break_st                                      -- RULE NUMBER: 61
+  ->  'break'  ';'                                                =>  BREAK_ST;
+ for_st                                        -- RULE NUMBER: 62
+  ->  'for'  '('  for_dcl  ';'  for_exp  ';'  for_inc  ')' 
+      statement                                                  =>  FOR_ST;
+ for_dcl                                       -- RULE NUMBER: 63
+  ->  for_dcl_list                                                =>  FOR_DCL;
+  ->                                                              =>  FOR_DCL;
+ for_dcl_list                                  -- RULE NUMBER: 65
+  ->  for_dcl_list  ','  init_declarator ;
+  ->  init_declarator ;
+ for_exp                                       -- RULE NUMBER: 67
+  ->  logical_or_exp                                              =>  FOR_EXP;
+  ->                                                              =>  FOR_EXP;
+ for_inc                                       -- RULE NUMBER: 69
+  ->  for_inc_list                                                =>  FOR_INC;
+  ->                                                              =>  FOR_INC;
+ for_inc_list                                  -- RULE NUMBER: 71
+  ->  assignment_exp ;
+  ->  for_inc_list  ','  assignment_exp ;
+ switch_st                                     -- RULE NUMBER: 73
+  ->  'switch'  '('  declarator  ')'  '{'  switch_case_list  '}'  =>  SWITCH_ST;
+ switch_case_list                              -- RULE NUMBER: 74
+  ->  switch_case_list  switch_case ;
+  ->  switch_case ;
+ switch_case                                   -- RULE NUMBER: 76
+  ->  'case'  '%number'  ':'  statement_list                      =>  CASE_ST;
+  ->  'case'  '%number'                                           =>  CASE_ST;
+  ->  'default'  ':'  statement_list                              =>  DEFAULT_ST;
+  ->  'default'  ':'                                              =>  DEFAULT_ST;
+ expression                                    -- RULE NUMBER: 80
+  ->  assignment_exp ;
+ assignment_exp                                -- RULE NUMBER: 81
+  ->  logical_or_exp ;
+  ->  unary_exp  '='  assignment_exp                              =>  ASSIGN_OP;
+  ->  unary_exp  '+='  assignment_exp                             =>  ADD_ASSIGN;
+  ->  unary_exp  '-='  assignment_exp                             =>  SUB_ASSIGN;
+  ->  unary_exp  '*='  assignment_exp                             =>  MUL_ASSIGN;
+  ->  unary_exp  '/='  assignment_exp                             =>  DIV_ASSIGN;
+  ->  unary_exp  '%='  assignment_exp                             =>  MOD_ASSIGN;
+ logical_or_exp                                -- RULE NUMBER: 88
+  ->  logical_and_exp ;
+  ->  logical_or_exp  '||'  logical_and_exp                       =>  LOGICAL_OR;
+ logical_and_exp                               -- RULE NUMBER: 90
+  ->  equality_exp ;
+  ->  logical_and_exp  '&&'  equality_exp                         =>  LOGICAL_AND;
+ equality_exp                                  -- RULE NUMBER: 92
+  ->  relational_exp ;
+  ->  equality_exp  '=='  relational_exp                          =>  EQ;
+  ->  equality_exp  '!='  relational_exp                          =>  NE;
+ relational_exp                                -- RULE NUMBER: 95
+  ->  additive_exp ;
+  ->  relational_exp  '>'  additive_exp                           =>  GT;
+  ->  relational_exp  '<'  additive_exp                           =>  LT;
+  ->  relational_exp  '>='  additive_exp                          =>  GE;
+  ->  relational_exp  '<='  additive_exp                          =>  LE;
+ additive_exp                                  -- RULE NUMBER: 100
+  ->  multiplicative_exp ;
+  ->  additive_exp  '+'  multiplicative_exp                       =>  ADD;
+  ->  additive_exp  '-'  multiplicative_exp                       =>  SUB;
+ multiplicative_exp                            -- RULE NUMBER: 103
+  ->  unary_exp ;
+  ->  multiplicative_exp  '*'  unary_exp                          =>  MUL;
+  ->  multiplicative_exp  '/'  unary_exp                          =>  DIV;
+  ->  multiplicative_exp  '%'  unary_exp                          =>  REMAINDER;
+ unary_exp                                     -- RULE NUMBER: 107
+  ->  postfix_exp ;
+  ->  '-'  unary_exp                                              =>  UNARY_MINUS;
+  ->  '!'  unary_exp                                              =>  LOGICAL_NOT;
+  ->  '++'  unary_exp                                             =>  PRE_INC;
+  ->  '--'  unary_exp                                             =>  PRE_DEC;
+ postfix_exp                                   -- RULE NUMBER: 112
+  ->  primary_exp ;
+  ->  postfix_exp  '['  expression  ']'                           =>  INDEX;
+  ->  postfix_exp  '('  opt_actual_param  ')'                     =>  CALL;
+  ->  postfix_exp  '++'                                           =>  POST_INC;
+  ->  postfix_exp  '--'                                           =>  POST_DEC;
+ opt_actual_param                              -- RULE NUMBER: 117
+  ->  actual_param ;
+  -> ;
+ actual_param                                  -- RULE NUMBER: 119
+  ->  actual_param_list                                           =>  ACTUAL_PARAM;
+ actual_param_list                             -- RULE NUMBER: 120
+  ->  assignment_exp ;
+  ->  actual_param_list  ','  assignment_exp ;
+ primary_exp                                   -- RULE NUMBER: 122
+  ->  '%ident' ;
+  ->  '%number' ;
+  ->  '('  expression  ')' ;
+
+ **************************************
+ *       CROSS      REFERENCE         *
+ **************************************
+
+ '!'                 109 
+ '!='                 94 
+ '%'                 106 
+ '%='                 87 
+ '%ident'            122   16   34   33 
+ '%number'            77   76  123   35   32 
+ '&&'                 91 
+ '('                  58   73  124  114   57   56   17   62 
+ ')'                  58   73  124  114   57   56   17   62 
+ '*'                 104 
+ '*='                 85 
+ '+'                 101 
+ '++'                110  115 
+ '+='                 83 
+ ','                  30   21   72   65  121 
+ '-'                 108  102 
+ '--'                111  116 
+ '-='                 84 
+ '/'                 105 
+ '/='                 86 
+ ':'                  79   78   76 
+ ';'                  59   62   62   53   28   60   61 
+ '<'                  97 
+ '<='                 99 
+ '='                  32   82 
+ '=='                 93 
+ '>'                  96 
+ '>='                 98 
+ '['                 113   34 
+ ']'                 113   34 
+ '_|_'                 0 
+ 'break'              61 
+ 'case'               77   76 
+ 'const'              13 
+ 'continue'           60 
+ 'default'            79   78 
+ 'else'               57 
+ 'for'                62 
+ 'if'                 57   56 
+ 'int'                14 
+ 'return'             59 
+ 'switch'             73 
+ 'void'               15 
+ 'while'              58 
+ '{'                  73   23 
+ '||'                 89 
+ '}'                  73   23 
+ actual_param        117  119*
+ actual_param_list   121  121* 120* 119 
+ additive_exp         99   98   97   96   95  102  102* 101  101*
+                     100*
+ assignment_exp       72   71   80   87   87*  86   86*  85   85*
+                      84   84*  83   83*  82   82*  81* 121  120 
+ break_st             52   61*
+ compound_st          41    6   23*
+ condition_st         43   49*  48*
+ continue_st          51   60*
+ dcl_spec             22    7   28    8*
+ dcl_specifier        10    9   12*  11*
+ dcl_specifiers       10   10*   9*   8 
+ declaration           5   27   26   28*
+ declaration_list     24   27   27*  26*
+ declarator           73   22   32   31   34*  33*
+ equality_exp         91   90   94   94*  93   93*  92*
+ expression           58  124  113   54   57   56   80*
+ expression_st        42   53*
+ external_dcl          3    2    5*   4*
+ flow_st              45   52*  51*  50*
+ for_dcl              62   64*  63*
+ for_dcl_list         66*  65   65*  63 
+ for_exp              62   68*  67*
+ for_inc              62   70*  69*
+ for_inc_list         72   72*  71*  69 
+ for_st               46   62*
+ formal_param          7   17*
+ formal_param_list    18   21   21*  20*
+ function_def          6*   4 
+ function_header       7*   6 
+ function_name        16*   7 
+ if_st                57*  56*  48 
+ init_dcl_list        30   30*  29*  28 
+ init_declarator      32*  31*  30   29   66   65 
+ logical_and_exp      89   88   91   91*  90*
+ logical_or_exp       89   89*  88*  67   81 
+ loop_st              44   47*  46*
+ mini_c                0    1*
+ mini_c$               0 
+ multiplicative_exp  106  106* 105  105* 104  104* 103* 102 
+                     101  100 
+ opt_actual_param    114  118* 117*
+ opt_dcl_list         25*  24*  23 
+ opt_expression       59   55*  54*  53 
+ opt_formal_param     19*  18*  17 
+ opt_number           36*  35*  34 
+ opt_stat_list        38*  37*  23 
+ param_dcl            22*  21   20 
+ postfix_exp         107  116  116* 115  115* 114  114* 113  113*
+                     112*
+ primary_exp         124* 123* 122* 112 
+ relational_exp       99   99*  98   98*  97   97*  96   96*  95*
+                      94   93   92 
+ return_st            59*  50 
+ statement            58   40   39   45*  44*  43*  42*  41*  57   57 
+                      56   62 
+ statement_list       78   76   40   40*  39*  37 
+ switch_case          75   74   79*  78*  77*  76*
+ switch_case_list     73   75*  74   74*
+ switch_st            73*  49 
+ translation_unit      3    3*   2*   1 
+ type_qualifier       13*  11 
+ type_specifier       15*  14*  12 
+ unary_exp           111  111* 110  110* 109  109* 108  108* 107* 106 
+                     105  104  103   87   86   85   84   83   82 
+ while_st             58*  47 
+
+ **************************************
+ *            STATISTICS              *
+ **************************************
+
+ --------- STRING TABLE ---------
+  String Table Space  : 1498
+  Number Of    Entrys :  177
+  Average Entry Length:    8
+  Buckets Used        :  106
+
+ ------ SYMBOL INFORMATION ------
+  Terminal     Count  :   46
+  Nonterminal  Count  :   61
+  Tree Node    Count  :   61
+  Synonym      Count  :    0
+
+ ------ RULE   INFORMATION ------
+  Number  Of   Rules  :  125
+  Average Rule Length :    2
+
+ **************************************
+ *        C0 and lookahead info       *
+ **************************************
+
+ Number OF Kernels : 198
+ *** KERNEL :   0
+
+ mini_c$ ->  .  mini_c '_|_'
+ mini_c ->  .  translation_unit
+ translation_unit ->  .  external_dcl
+ translation_unit ->  .  translation_unit external_dcl
+ external_dcl ->  .  function_def
+ external_dcl ->  .  declaration
+ function_def ->  .  function_header compound_st
+ declaration ->  .  dcl_spec init_dcl_list ';'
+ function_header ->  .  dcl_spec function_name formal_param
+ dcl_spec ->  .  dcl_specifiers
+ dcl_specifiers ->  .  dcl_specifier
+ dcl_specifiers ->  .  dcl_specifiers dcl_specifier
+ dcl_specifier ->  .  type_qualifier
+ dcl_specifier ->  .  type_specifier
+ type_qualifier ->  .  'const'
+ type_specifier ->  .  'int'
+ type_specifier ->  .  'void'
+
+ SHIFT  14  'const'
+ SHIFT  13  'int'
+ SHIFT  12  'void'
+ SHIFT  11  dcl_spec
+ SHIFT  10  dcl_specifier
+ SHIFT   9  dcl_specifiers
+ SHIFT   8  declaration
+ SHIFT   7  external_dcl
+ SHIFT   6  function_def
+ SHIFT   5  function_header
+ SHIFT   4  mini_c
+ SHIFT   3  translation_unit
+ SHIFT   2  type_qualifier
+ SHIFT   1  type_specifier
+
+ *** KERNEL :   1
+ ACCESS SYMBOL :  type_specifier
+ dcl_specifier ->  type_specifier . 
+
+ REDUCE  12  'void' 'int' 'const' '%ident'
+
+ *** KERNEL :   2
+ ACCESS SYMBOL :  type_qualifier
+ dcl_specifier ->  type_qualifier . 
+
+ REDUCE  11  'void' 'int' 'const' '%ident'
+
+ *** KERNEL :   3
+ ACCESS SYMBOL :  translation_unit
+ mini_c ->  translation_unit . 
+ translation_unit ->  translation_unit .  external_dcl
+ external_dcl ->  .  function_def
+ external_dcl ->  .  declaration
+ function_def ->  .  function_header compound_st
+ declaration ->  .  dcl_spec init_dcl_list ';'
+ function_header ->  .  dcl_spec function_name formal_param
+ dcl_spec ->  .  dcl_specifiers
+ dcl_specifiers ->  .  dcl_specifier
+ dcl_specifiers ->  .  dcl_specifiers dcl_specifier
+ dcl_specifier ->  .  type_qualifier
+ dcl_specifier ->  .  type_specifier
+ type_qualifier ->  .  'const'
+ type_specifier ->  .  'int'
+ type_specifier ->  .  'void'
+
+ REDUCE   1  '_|_'
+ SHIFT  14  'const'
+ SHIFT  13  'int'
+ SHIFT  12  'void'
+ SHIFT  11  dcl_spec
+ SHIFT  10  dcl_specifier
+ SHIFT   9  dcl_specifiers
+ SHIFT   8  declaration
+ SHIFT  15  external_dcl
+ SHIFT   6  function_def
+ SHIFT   5  function_header
+ SHIFT   2  type_qualifier
+ SHIFT   1  type_specifier
+
+ *** KERNEL :   4
+ ACCESS SYMBOL :  mini_c
+ mini_c$ ->  mini_c .  '_|_'
+
+ SHIFT  16  '_|_'
+
+ *** KERNEL :   5
+ ACCESS SYMBOL :  function_header
+ function_def ->  function_header .  compound_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+
+ SHIFT  18  '{'
+ SHIFT  17  compound_st
+
+ *** KERNEL :   6
+ ACCESS SYMBOL :  function_def
+ external_dcl ->  function_def . 
+
+ REDUCE   4  'void' 'int' 'const' '_|_'
+
+ *** KERNEL :   7
+ ACCESS SYMBOL :  external_dcl
+ translation_unit ->  external_dcl . 
+
+ REDUCE   2  'void' 'int' 'const' '_|_'
+
+ *** KERNEL :   8
+ ACCESS SYMBOL :  declaration
+ external_dcl ->  declaration . 
+
+ REDUCE   5  'void' 'int' 'const' '_|_'
+
+ *** KERNEL :   9
+ ACCESS SYMBOL :  dcl_specifiers
+ dcl_spec ->  dcl_specifiers . 
+ dcl_specifiers ->  dcl_specifiers .  dcl_specifier
+ dcl_specifier ->  .  type_qualifier
+ dcl_specifier ->  .  type_specifier
+ type_qualifier ->  .  'const'
+ type_specifier ->  .  'int'
+ type_specifier ->  .  'void'
+
+ REDUCE   8  '%ident'
+ SHIFT  14  'const'
+ SHIFT  13  'int'
+ SHIFT  12  'void'
+ SHIFT  19  dcl_specifier
+ SHIFT   2  type_qualifier
+ SHIFT   1  type_specifier
+
+ *** KERNEL :  10
+ ACCESS SYMBOL :  dcl_specifier
+ dcl_specifiers ->  dcl_specifier . 
+
+ REDUCE   9  'void' 'int' 'const' '%ident'
+
+ *** KERNEL :  11
+ ACCESS SYMBOL :  dcl_spec
+ declaration ->  dcl_spec .  init_dcl_list ';'
+ function_header ->  dcl_spec .  function_name formal_param
+ init_dcl_list ->  .  init_declarator
+ init_dcl_list ->  .  init_dcl_list ',' init_declarator
+ function_name ->  .  '%ident'
+ init_declarator ->  .  declarator
+ init_declarator ->  .  declarator '=' '%number'
+ declarator ->  .  '%ident'
+ declarator ->  .  '%ident' '[' opt_number ']'
+
+ SHIFT  24  '%ident'
+ SHIFT  23  declarator
+ SHIFT  22  function_name
+ SHIFT  21  init_dcl_list
+ SHIFT  20  init_declarator
+
+ *** KERNEL :  12
+ ACCESS SYMBOL :  'void'
+ type_specifier ->  'void' . 
+
+ REDUCE  15  'void' 'int' 'const' '%ident'
+
+ *** KERNEL :  13
+ ACCESS SYMBOL :  'int'
+ type_specifier ->  'int' . 
+
+ REDUCE  14  'void' 'int' 'const' '%ident'
+
+ *** KERNEL :  14
+ ACCESS SYMBOL :  'const'
+ type_qualifier ->  'const' . 
+
+ REDUCE  13  'void' 'int' 'const' '%ident'
+
+ *** KERNEL :  15
+ ACCESS SYMBOL :  external_dcl
+ translation_unit ->  translation_unit external_dcl . 
+
+ REDUCE   3  'void' 'int' 'const' '_|_'
+
+ *** KERNEL :  16
+ ACCESS SYMBOL :  '_|_'
+ mini_c$ ->  mini_c '_|_' . 
+
+ ACCEPT 
+
+ *** KERNEL :  17
+ ACCESS SYMBOL :  compound_st
+ function_def ->  function_header compound_st . 
+
+ REDUCE   6  'void' 'int' 'const' '_|_'
+
+ *** KERNEL :  18
+ ACCESS SYMBOL :  '{'
+ compound_st ->  '{' .  opt_dcl_list opt_stat_list '}'
+ opt_dcl_list ->  .  declaration_list
+ opt_dcl_list ->  . 
+ declaration_list ->  .  declaration
+ declaration_list ->  .  declaration_list declaration
+ declaration ->  .  dcl_spec init_dcl_list ';'
+ dcl_spec ->  .  dcl_specifiers
+ dcl_specifiers ->  .  dcl_specifier
+ dcl_specifiers ->  .  dcl_specifiers dcl_specifier
+ dcl_specifier ->  .  type_qualifier
+ dcl_specifier ->  .  type_specifier
+ type_qualifier ->  .  'const'
+ type_specifier ->  .  'int'
+ type_specifier ->  .  'void'
+
+ REDUCE  25  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'continue' 'break' ';'
+             '--' '-' '++' '(' '%number' '%ident' '!'
+ SHIFT  14  'const'
+ SHIFT  13  'int'
+ SHIFT  12  'void'
+ SHIFT  28  dcl_spec
+ SHIFT  10  dcl_specifier
+ SHIFT   9  dcl_specifiers
+ SHIFT  27  declaration
+ SHIFT  26  declaration_list
+ SHIFT  25  opt_dcl_list
+ SHIFT   2  type_qualifier
+ SHIFT   1  type_specifier
+
+ *** KERNEL :  19
+ ACCESS SYMBOL :  dcl_specifier
+ dcl_specifiers ->  dcl_specifiers dcl_specifier . 
+
+ REDUCE  10  'void' 'int' 'const' '%ident'
+
+ *** KERNEL :  20
+ ACCESS SYMBOL :  init_declarator
+ init_dcl_list ->  init_declarator . 
+
+ REDUCE  29  ';' ','
+
+ *** KERNEL :  21
+ ACCESS SYMBOL :  init_dcl_list
+ declaration ->  dcl_spec init_dcl_list .  ';'
+ init_dcl_list ->  init_dcl_list .  ',' init_declarator
+
+ SHIFT  30  ','
+ SHIFT  29  ';'
+
+ *** KERNEL :  22
+ ACCESS SYMBOL :  function_name
+ function_header ->  dcl_spec function_name .  formal_param
+ formal_param ->  .  '(' opt_formal_param ')'
+
+ SHIFT  32  '('
+ SHIFT  31  formal_param
+
+ *** KERNEL :  23
+ ACCESS SYMBOL :  declarator
+ init_declarator ->  declarator . 
+ init_declarator ->  declarator .  '=' '%number'
+
+ REDUCE  31  ';' ','
+ SHIFT  33  '='
+
+ *** KERNEL :  24
+ ACCESS SYMBOL :  '%ident'
+ function_name ->  '%ident' . 
+ declarator ->  '%ident' . 
+ declarator ->  '%ident' .  '[' opt_number ']'
+
+ REDUCE  33  '=' ';' ','
+ REDUCE  16  '('
+ SHIFT  34  '['
+
+ *** KERNEL :  25
+ ACCESS SYMBOL :  opt_dcl_list
+ compound_st ->  '{' opt_dcl_list .  opt_stat_list '}'
+ opt_stat_list ->  .  statement_list
+ opt_stat_list ->  . 
+ statement_list ->  .  statement
+ statement_list ->  .  statement_list statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ REDUCE  38  '}'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  44  opt_stat_list
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  39  statement
+ SHIFT  38  statement_list
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL :  26
+ ACCESS SYMBOL :  declaration_list
+ opt_dcl_list ->  declaration_list . 
+ declaration_list ->  declaration_list .  declaration
+ declaration ->  .  dcl_spec init_dcl_list ';'
+ dcl_spec ->  .  dcl_specifiers
+ dcl_specifiers ->  .  dcl_specifier
+ dcl_specifiers ->  .  dcl_specifiers dcl_specifier
+ dcl_specifier ->  .  type_qualifier
+ dcl_specifier ->  .  type_specifier
+ type_qualifier ->  .  'const'
+ type_specifier ->  .  'int'
+ type_specifier ->  .  'void'
+
+ REDUCE  24  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'continue' 'break' ';'
+             '--' '-' '++' '(' '%number' '%ident' '!'
+ SHIFT  14  'const'
+ SHIFT  13  'int'
+ SHIFT  12  'void'
+ SHIFT  28  dcl_spec
+ SHIFT  10  dcl_specifier
+ SHIFT   9  dcl_specifiers
+ SHIFT  76  declaration
+ SHIFT   2  type_qualifier
+ SHIFT   1  type_specifier
+
+ *** KERNEL :  27
+ ACCESS SYMBOL :  declaration
+ declaration_list ->  declaration . 
+
+ REDUCE  26  '}' '{' 'while' 'void' 'switch' 'return' 'int' 'if' 'for' 'continue'
+             'const' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  28
+ ACCESS SYMBOL :  dcl_spec
+ declaration ->  dcl_spec .  init_dcl_list ';'
+ init_dcl_list ->  .  init_declarator
+ init_dcl_list ->  .  init_dcl_list ',' init_declarator
+ init_declarator ->  .  declarator
+ init_declarator ->  .  declarator '=' '%number'
+ declarator ->  .  '%ident'
+ declarator ->  .  '%ident' '[' opt_number ']'
+
+ SHIFT  77  '%ident'
+ SHIFT  23  declarator
+ SHIFT  21  init_dcl_list
+ SHIFT  20  init_declarator
+
+ *** KERNEL :  29
+ ACCESS SYMBOL :  ';'
+ declaration ->  dcl_spec init_dcl_list ';' . 
+
+ REDUCE  28  '}' '{' 'while' 'void' 'switch' 'return' 'int' 'if' 'for' 'continue'
+             'const' 'break' '_|_' ';' '--' '-' '++' '(' '%number' '%ident'
+             '!'
+
+ *** KERNEL :  30
+ ACCESS SYMBOL :  ','
+ init_dcl_list ->  init_dcl_list ',' .  init_declarator
+ init_declarator ->  .  declarator
+ init_declarator ->  .  declarator '=' '%number'
+ declarator ->  .  '%ident'
+ declarator ->  .  '%ident' '[' opt_number ']'
+
+ SHIFT  77  '%ident'
+ SHIFT  23  declarator
+ SHIFT  78  init_declarator
+
+ *** KERNEL :  31
+ ACCESS SYMBOL :  formal_param
+ function_header ->  dcl_spec function_name formal_param . 
+
+ REDUCE   7  '{'
+
+ *** KERNEL :  32
+ ACCESS SYMBOL :  '('
+ formal_param ->  '(' .  opt_formal_param ')'
+ opt_formal_param ->  .  formal_param_list
+ opt_formal_param ->  . 
+ formal_param_list ->  .  param_dcl
+ formal_param_list ->  .  formal_param_list ',' param_dcl
+ param_dcl ->  .  dcl_spec declarator
+ dcl_spec ->  .  dcl_specifiers
+ dcl_specifiers ->  .  dcl_specifier
+ dcl_specifiers ->  .  dcl_specifiers dcl_specifier
+ dcl_specifier ->  .  type_qualifier
+ dcl_specifier ->  .  type_specifier
+ type_qualifier ->  .  'const'
+ type_specifier ->  .  'int'
+ type_specifier ->  .  'void'
+
+ REDUCE  19  ')'
+ SHIFT  14  'const'
+ SHIFT  13  'int'
+ SHIFT  12  'void'
+ SHIFT  82  dcl_spec
+ SHIFT  10  dcl_specifier
+ SHIFT   9  dcl_specifiers
+ SHIFT  81  formal_param_list
+ SHIFT  80  opt_formal_param
+ SHIFT  79  param_dcl
+ SHIFT   2  type_qualifier
+ SHIFT   1  type_specifier
+
+ *** KERNEL :  33
+ ACCESS SYMBOL :  '='
+ init_declarator ->  declarator '=' .  '%number'
+
+ SHIFT  83  '%number'
+
+ *** KERNEL :  34
+ ACCESS SYMBOL :  '['
+ declarator ->  '%ident' '[' .  opt_number ']'
+ opt_number ->  .  '%number'
+ opt_number ->  . 
+
+ REDUCE  36  ']'
+ SHIFT  85  '%number'
+ SHIFT  84  opt_number
+
+ *** KERNEL :  35
+ ACCESS SYMBOL :  while_st
+ loop_st ->  while_st . 
+
+ REDUCE  47  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  36
+ ACCESS SYMBOL :  unary_exp
+ assignment_exp ->  unary_exp .  '=' assignment_exp
+ assignment_exp ->  unary_exp .  '+=' assignment_exp
+ assignment_exp ->  unary_exp .  '-=' assignment_exp
+ assignment_exp ->  unary_exp .  '*=' assignment_exp
+ assignment_exp ->  unary_exp .  '/=' assignment_exp
+ assignment_exp ->  unary_exp .  '%=' assignment_exp
+ multiplicative_exp ->  unary_exp . 
+
+ REDUCE 103  '||' ']' '>=' '>' '==' '<=' '<' ';' '/' '-'
+             ',' '+' '*' ')' '&&' '%' '!='
+ SHIFT  91  '%='
+ SHIFT  90  '*='
+ SHIFT  89  '+='
+ SHIFT  88  '-='
+ SHIFT  87  '/='
+ SHIFT  86  '='
+
+ *** KERNEL :  37
+ ACCESS SYMBOL :  switch_st
+ condition_st ->  switch_st . 
+
+ REDUCE  49  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  38
+ ACCESS SYMBOL :  statement_list
+ opt_stat_list ->  statement_list . 
+ statement_list ->  statement_list .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ REDUCE  37  '}'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  92  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL :  39
+ ACCESS SYMBOL :  statement
+ statement_list ->  statement . 
+
+ REDUCE  39  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'default' 'continue' 'case'
+             'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  40
+ ACCESS SYMBOL :  return_st
+ flow_st ->  return_st . 
+
+ REDUCE  50  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  41
+ ACCESS SYMBOL :  relational_exp
+ equality_exp ->  relational_exp . 
+ relational_exp ->  relational_exp .  '>' additive_exp
+ relational_exp ->  relational_exp .  '<' additive_exp
+ relational_exp ->  relational_exp .  '>=' additive_exp
+ relational_exp ->  relational_exp .  '<=' additive_exp
+
+ REDUCE  92  '||' ']' '==' ';' ',' ')' '&&' '!='
+ SHIFT  96  '<'
+ SHIFT  95  '<='
+ SHIFT  94  '>'
+ SHIFT  93  '>='
+
+ *** KERNEL :  42
+ ACCESS SYMBOL :  primary_exp
+ postfix_exp ->  primary_exp . 
+
+ REDUCE 112  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL :  43
+ ACCESS SYMBOL :  postfix_exp
+ unary_exp ->  postfix_exp . 
+ postfix_exp ->  postfix_exp .  '[' expression ']'
+ postfix_exp ->  postfix_exp .  '(' opt_actual_param ')'
+ postfix_exp ->  postfix_exp .  '++'
+ postfix_exp ->  postfix_exp .  '--'
+
+ REDUCE 107  '||' ']' '>=' '>' '==' '=' '<=' '<' ';' '/='
+             '/' '-=' '-' ',' '+=' '+' '*=' '*' ')' '&&'
+             '%=' '%' '!='
+ SHIFT 100  '('
+ SHIFT  99  '++'
+ SHIFT  98  '--'
+ SHIFT  97  '['
+
+ *** KERNEL :  44
+ ACCESS SYMBOL :  opt_stat_list
+ compound_st ->  '{' opt_dcl_list opt_stat_list .  '}'
+
+ SHIFT 101  '}'
+
+ *** KERNEL :  45
+ ACCESS SYMBOL :  opt_expression
+ expression_st ->  opt_expression .  ';'
+
+ SHIFT 102  ';'
+
+ *** KERNEL :  46
+ ACCESS SYMBOL :  multiplicative_exp
+ additive_exp ->  multiplicative_exp . 
+ multiplicative_exp ->  multiplicative_exp .  '*' unary_exp
+ multiplicative_exp ->  multiplicative_exp .  '/' unary_exp
+ multiplicative_exp ->  multiplicative_exp .  '%' unary_exp
+
+ REDUCE 100  '||' ']' '>=' '>' '==' '<=' '<' ';' '-' ','
+             '+' ')' '&&' '!='
+ SHIFT 105  '%'
+ SHIFT 104  '*'
+ SHIFT 103  '/'
+
+ *** KERNEL :  47
+ ACCESS SYMBOL :  loop_st
+ statement ->  loop_st . 
+
+ REDUCE  44  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  48
+ ACCESS SYMBOL :  logical_or_exp
+ assignment_exp ->  logical_or_exp . 
+ logical_or_exp ->  logical_or_exp .  '||' logical_and_exp
+
+ REDUCE  81  ']' ';' ',' ')'
+ SHIFT 106  '||'
+
+ *** KERNEL :  49
+ ACCESS SYMBOL :  logical_and_exp
+ logical_or_exp ->  logical_and_exp . 
+ logical_and_exp ->  logical_and_exp .  '&&' equality_exp
+
+ REDUCE  88  '||' ']' ';' ',' ')'
+ SHIFT 107  '&&'
+
+ *** KERNEL :  50
+ ACCESS SYMBOL :  if_st
+ condition_st ->  if_st . 
+
+ REDUCE  48  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  51
+ ACCESS SYMBOL :  for_st
+ loop_st ->  for_st . 
+
+ REDUCE  46  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  52
+ ACCESS SYMBOL :  flow_st
+ statement ->  flow_st . 
+
+ REDUCE  45  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  53
+ ACCESS SYMBOL :  expression_st
+ statement ->  expression_st . 
+
+ REDUCE  42  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  54
+ ACCESS SYMBOL :  expression
+ opt_expression ->  expression . 
+
+ REDUCE  54  ';'
+
+ *** KERNEL :  55
+ ACCESS SYMBOL :  equality_exp
+ logical_and_exp ->  equality_exp . 
+ equality_exp ->  equality_exp .  '==' relational_exp
+ equality_exp ->  equality_exp .  '!=' relational_exp
+
+ REDUCE  90  '||' ']' ';' ',' ')' '&&'
+ SHIFT 109  '!='
+ SHIFT 108  '=='
+
+ *** KERNEL :  56
+ ACCESS SYMBOL :  continue_st
+ flow_st ->  continue_st . 
+
+ REDUCE  51  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  57
+ ACCESS SYMBOL :  condition_st
+ statement ->  condition_st . 
+
+ REDUCE  43  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  58
+ ACCESS SYMBOL :  compound_st
+ statement ->  compound_st . 
+
+ REDUCE  41  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  59
+ ACCESS SYMBOL :  break_st
+ flow_st ->  break_st . 
+
+ REDUCE  52  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  60
+ ACCESS SYMBOL :  assignment_exp
+ expression ->  assignment_exp . 
+
+ REDUCE  80  ']' ';' ')'
+
+ *** KERNEL :  61
+ ACCESS SYMBOL :  additive_exp
+ relational_exp ->  additive_exp . 
+ additive_exp ->  additive_exp .  '+' multiplicative_exp
+ additive_exp ->  additive_exp .  '-' multiplicative_exp
+
+ REDUCE  95  '||' ']' '>=' '>' '==' '<=' '<' ';' ',' ')'
+             '&&' '!='
+ SHIFT 111  '+'
+ SHIFT 110  '-'
+
+ *** KERNEL :  62
+ ACCESS SYMBOL :  'while'
+ while_st ->  'while' .  '(' expression ')' statement
+
+ SHIFT 112  '('
+
+ *** KERNEL :  63
+ ACCESS SYMBOL :  'switch'
+ switch_st ->  'switch' .  '(' declarator ')' '{' switch_case_list '}'
+
+ SHIFT 113  '('
+
+ *** KERNEL :  64
+ ACCESS SYMBOL :  'return'
+ return_st ->  'return' .  opt_expression ';'
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT 114  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  65
+ ACCESS SYMBOL :  'if'
+ if_st ->  'if' .  '(' expression ')' statement
+ if_st ->  'if' .  '(' expression ')' statement 'else' statement
+
+ SHIFT 115  '('
+
+ *** KERNEL :  66
+ ACCESS SYMBOL :  'for'
+ for_st ->  'for' .  '(' for_dcl ';' for_exp ';' for_inc ')' statement
+
+ SHIFT 116  '('
+
+ *** KERNEL :  67
+ ACCESS SYMBOL :  'continue'
+ continue_st ->  'continue' .  ';'
+
+ SHIFT 117  ';'
+
+ *** KERNEL :  68
+ ACCESS SYMBOL :  'break'
+ break_st ->  'break' .  ';'
+
+ SHIFT 118  ';'
+
+ *** KERNEL :  69
+ ACCESS SYMBOL :  '--'
+ unary_exp ->  '--' .  unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 119  unary_exp
+
+ *** KERNEL :  70
+ ACCESS SYMBOL :  '-'
+ unary_exp ->  '-' .  unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 120  unary_exp
+
+ *** KERNEL :  71
+ ACCESS SYMBOL :  '++'
+ unary_exp ->  '++' .  unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 121  unary_exp
+
+ *** KERNEL :  72
+ ACCESS SYMBOL :  '('
+ primary_exp ->  '(' .  expression ')'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT 122  expression
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  73
+ ACCESS SYMBOL :  '%number'
+ primary_exp ->  '%number' . 
+
+ REDUCE 123  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL :  74
+ ACCESS SYMBOL :  '%ident'
+ primary_exp ->  '%ident' . 
+
+ REDUCE 122  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL :  75
+ ACCESS SYMBOL :  '!'
+ unary_exp ->  '!' .  unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 123  unary_exp
+
+ *** KERNEL :  76
+ ACCESS SYMBOL :  declaration
+ declaration_list ->  declaration_list declaration . 
+
+ REDUCE  27  '}' '{' 'while' 'void' 'switch' 'return' 'int' 'if' 'for' 'continue'
+             'const' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  77
+ ACCESS SYMBOL :  '%ident'
+ declarator ->  '%ident' . 
+ declarator ->  '%ident' .  '[' opt_number ']'
+
+ REDUCE  33  '=' ';' ',' ')'
+ SHIFT  34  '['
+
+ *** KERNEL :  78
+ ACCESS SYMBOL :  init_declarator
+ init_dcl_list ->  init_dcl_list ',' init_declarator . 
+
+ REDUCE  30  ';' ','
+
+ *** KERNEL :  79
+ ACCESS SYMBOL :  param_dcl
+ formal_param_list ->  param_dcl . 
+
+ REDUCE  20  ',' ')'
+
+ *** KERNEL :  80
+ ACCESS SYMBOL :  opt_formal_param
+ formal_param ->  '(' opt_formal_param .  ')'
+
+ SHIFT 124  ')'
+
+ *** KERNEL :  81
+ ACCESS SYMBOL :  formal_param_list
+ opt_formal_param ->  formal_param_list . 
+ formal_param_list ->  formal_param_list .  ',' param_dcl
+
+ REDUCE  18  ')'
+ SHIFT 125  ','
+
+ *** KERNEL :  82
+ ACCESS SYMBOL :  dcl_spec
+ param_dcl ->  dcl_spec .  declarator
+ declarator ->  .  '%ident'
+ declarator ->  .  '%ident' '[' opt_number ']'
+
+ SHIFT  77  '%ident'
+ SHIFT 126  declarator
+
+ *** KERNEL :  83
+ ACCESS SYMBOL :  '%number'
+ init_declarator ->  declarator '=' '%number' . 
+
+ REDUCE  32  ';' ','
+
+ *** KERNEL :  84
+ ACCESS SYMBOL :  opt_number
+ declarator ->  '%ident' '[' opt_number .  ']'
+
+ SHIFT 127  ']'
+
+ *** KERNEL :  85
+ ACCESS SYMBOL :  '%number'
+ opt_number ->  '%number' . 
+
+ REDUCE  35  ']'
+
+ *** KERNEL :  86
+ ACCESS SYMBOL :  '='
+ assignment_exp ->  unary_exp '=' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 128  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  87
+ ACCESS SYMBOL :  '/='
+ assignment_exp ->  unary_exp '/=' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 129  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  88
+ ACCESS SYMBOL :  '-='
+ assignment_exp ->  unary_exp '-=' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 130  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  89
+ ACCESS SYMBOL :  '+='
+ assignment_exp ->  unary_exp '+=' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 131  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  90
+ ACCESS SYMBOL :  '*='
+ assignment_exp ->  unary_exp '*=' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 132  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  91
+ ACCESS SYMBOL :  '%='
+ assignment_exp ->  unary_exp '%=' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 133  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  92
+ ACCESS SYMBOL :  statement
+ statement_list ->  statement_list statement . 
+
+ REDUCE  40  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'default' 'continue' 'case'
+             'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL :  93
+ ACCESS SYMBOL :  '>='
+ relational_exp ->  relational_exp '>=' .  additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT 135  additive_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL :  94
+ ACCESS SYMBOL :  '>'
+ relational_exp ->  relational_exp '>' .  additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT 136  additive_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL :  95
+ ACCESS SYMBOL :  '<='
+ relational_exp ->  relational_exp '<=' .  additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT 137  additive_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL :  96
+ ACCESS SYMBOL :  '<'
+ relational_exp ->  relational_exp '<' .  additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT 138  additive_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL :  97
+ ACCESS SYMBOL :  '['
+ postfix_exp ->  postfix_exp '[' .  expression ']'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT 139  expression
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL :  98
+ ACCESS SYMBOL :  '--'
+ postfix_exp ->  postfix_exp '--' . 
+
+ REDUCE 116  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL :  99
+ ACCESS SYMBOL :  '++'
+ postfix_exp ->  postfix_exp '++' . 
+
+ REDUCE 115  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL : 100
+ ACCESS SYMBOL :  '('
+ postfix_exp ->  postfix_exp '(' .  opt_actual_param ')'
+ opt_actual_param ->  .  actual_param
+ opt_actual_param ->  . 
+ actual_param ->  .  actual_param_list
+ actual_param_list ->  .  assignment_exp
+ actual_param_list ->  .  actual_param_list ',' assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE 118  ')'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT 143  actual_param
+ SHIFT 142  actual_param_list
+ SHIFT  61  additive_exp
+ SHIFT 141  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT 140  opt_actual_param
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL : 101
+ ACCESS SYMBOL :  '}'
+ compound_st ->  '{' opt_dcl_list opt_stat_list '}' . 
+
+ REDUCE  23  '}' '{' 'while' 'void' 'switch' 'return' 'int' 'if' 'for' 'else'
+             'default' 'continue' 'const' 'case' 'break' '_|_' ';' '--' '-' '++'
+             '(' '%number' '%ident' '!'
+
+ *** KERNEL : 102
+ ACCESS SYMBOL :  ';'
+ expression_st ->  opt_expression ';' . 
+
+ REDUCE  53  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL : 103
+ ACCESS SYMBOL :  '/'
+ multiplicative_exp ->  multiplicative_exp '/' .  unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 144  unary_exp
+
+ *** KERNEL : 104
+ ACCESS SYMBOL :  '*'
+ multiplicative_exp ->  multiplicative_exp '*' .  unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 145  unary_exp
+
+ *** KERNEL : 105
+ ACCESS SYMBOL :  '%'
+ multiplicative_exp ->  multiplicative_exp '%' .  unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 146  unary_exp
+
+ *** KERNEL : 106
+ ACCESS SYMBOL :  '||'
+ logical_or_exp ->  logical_or_exp '||' .  logical_and_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  55  equality_exp
+ SHIFT 147  logical_and_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL : 107
+ ACCESS SYMBOL :  '&&'
+ logical_and_exp ->  logical_and_exp '&&' .  equality_exp
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 148  equality_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL : 108
+ ACCESS SYMBOL :  '=='
+ equality_exp ->  equality_exp '==' .  relational_exp
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 149  relational_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL : 109
+ ACCESS SYMBOL :  '!='
+ equality_exp ->  equality_exp '!=' .  relational_exp
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 150  relational_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL : 110
+ ACCESS SYMBOL :  '-'
+ additive_exp ->  additive_exp '-' .  multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT 151  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL : 111
+ ACCESS SYMBOL :  '+'
+ additive_exp ->  additive_exp '+' .  multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT 152  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL : 112
+ ACCESS SYMBOL :  '('
+ while_st ->  'while' '(' .  expression ')' statement
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT 153  expression
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL : 113
+ ACCESS SYMBOL :  '('
+ switch_st ->  'switch' '(' .  declarator ')' '{' switch_case_list '}'
+ declarator ->  .  '%ident'
+ declarator ->  .  '%ident' '[' opt_number ']'
+
+ SHIFT  77  '%ident'
+ SHIFT 154  declarator
+
+ *** KERNEL : 114
+ ACCESS SYMBOL :  opt_expression
+ return_st ->  'return' opt_expression .  ';'
+
+ SHIFT 155  ';'
+
+ *** KERNEL : 115
+ ACCESS SYMBOL :  '('
+ if_st ->  'if' '(' .  expression ')' statement
+ if_st ->  'if' '(' .  expression ')' statement 'else' statement
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT 156  expression
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL : 116
+ ACCESS SYMBOL :  '('
+ for_st ->  'for' '(' .  for_dcl ';' for_exp ';' for_inc ')' statement
+ for_dcl ->  .  for_dcl_list
+ for_dcl ->  . 
+ for_dcl_list ->  .  for_dcl_list ',' init_declarator
+ for_dcl_list ->  .  init_declarator
+ init_declarator ->  .  declarator
+ init_declarator ->  .  declarator '=' '%number'
+ declarator ->  .  '%ident'
+ declarator ->  .  '%ident' '[' opt_number ']'
+
+ REDUCE  64  ';'
+ SHIFT  77  '%ident'
+ SHIFT  23  declarator
+ SHIFT 159  for_dcl
+ SHIFT 158  for_dcl_list
+ SHIFT 157  init_declarator
+
+ *** KERNEL : 117
+ ACCESS SYMBOL :  ';'
+ continue_st ->  'continue' ';' . 
+
+ REDUCE  60  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL : 118
+ ACCESS SYMBOL :  ';'
+ break_st ->  'break' ';' . 
+
+ REDUCE  61  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL : 119
+ ACCESS SYMBOL :  unary_exp
+ unary_exp ->  '--' unary_exp . 
+
+ REDUCE 111  '||' ']' '>=' '>' '==' '=' '<=' '<' ';' '/='
+             '/' '-=' '-' ',' '+=' '+' '*=' '*' ')' '&&'
+             '%=' '%' '!='
+
+ *** KERNEL : 120
+ ACCESS SYMBOL :  unary_exp
+ unary_exp ->  '-' unary_exp . 
+
+ REDUCE 108  '||' ']' '>=' '>' '==' '=' '<=' '<' ';' '/='
+             '/' '-=' '-' ',' '+=' '+' '*=' '*' ')' '&&'
+             '%=' '%' '!='
+
+ *** KERNEL : 121
+ ACCESS SYMBOL :  unary_exp
+ unary_exp ->  '++' unary_exp . 
+
+ REDUCE 110  '||' ']' '>=' '>' '==' '=' '<=' '<' ';' '/='
+             '/' '-=' '-' ',' '+=' '+' '*=' '*' ')' '&&'
+             '%=' '%' '!='
+
+ *** KERNEL : 122
+ ACCESS SYMBOL :  expression
+ primary_exp ->  '(' expression .  ')'
+
+ SHIFT 160  ')'
+
+ *** KERNEL : 123
+ ACCESS SYMBOL :  unary_exp
+ unary_exp ->  '!' unary_exp . 
+
+ REDUCE 109  '||' ']' '>=' '>' '==' '=' '<=' '<' ';' '/='
+             '/' '-=' '-' ',' '+=' '+' '*=' '*' ')' '&&'
+             '%=' '%' '!='
+
+ *** KERNEL : 124
+ ACCESS SYMBOL :  ')'
+ formal_param ->  '(' opt_formal_param ')' . 
+
+ REDUCE  17  '{'
+
+ *** KERNEL : 125
+ ACCESS SYMBOL :  ','
+ formal_param_list ->  formal_param_list ',' .  param_dcl
+ param_dcl ->  .  dcl_spec declarator
+ dcl_spec ->  .  dcl_specifiers
+ dcl_specifiers ->  .  dcl_specifier
+ dcl_specifiers ->  .  dcl_specifiers dcl_specifier
+ dcl_specifier ->  .  type_qualifier
+ dcl_specifier ->  .  type_specifier
+ type_qualifier ->  .  'const'
+ type_specifier ->  .  'int'
+ type_specifier ->  .  'void'
+
+ SHIFT  14  'const'
+ SHIFT  13  'int'
+ SHIFT  12  'void'
+ SHIFT  82  dcl_spec
+ SHIFT  10  dcl_specifier
+ SHIFT   9  dcl_specifiers
+ SHIFT 161  param_dcl
+ SHIFT   2  type_qualifier
+ SHIFT   1  type_specifier
+
+ *** KERNEL : 126
+ ACCESS SYMBOL :  declarator
+ param_dcl ->  dcl_spec declarator . 
+
+ REDUCE  22  ',' ')'
+
+ *** KERNEL : 127
+ ACCESS SYMBOL :  ']'
+ declarator ->  '%ident' '[' opt_number ']' . 
+
+ REDUCE  34  '=' ';' ',' ')'
+
+ *** KERNEL : 128
+ ACCESS SYMBOL :  assignment_exp
+ assignment_exp ->  unary_exp '=' assignment_exp . 
+
+ REDUCE  82  ']' ';' ',' ')'
+
+ *** KERNEL : 129
+ ACCESS SYMBOL :  assignment_exp
+ assignment_exp ->  unary_exp '/=' assignment_exp . 
+
+ REDUCE  86  ']' ';' ',' ')'
+
+ *** KERNEL : 130
+ ACCESS SYMBOL :  assignment_exp
+ assignment_exp ->  unary_exp '-=' assignment_exp . 
+
+ REDUCE  84  ']' ';' ',' ')'
+
+ *** KERNEL : 131
+ ACCESS SYMBOL :  assignment_exp
+ assignment_exp ->  unary_exp '+=' assignment_exp . 
+
+ REDUCE  83  ']' ';' ',' ')'
+
+ *** KERNEL : 132
+ ACCESS SYMBOL :  assignment_exp
+ assignment_exp ->  unary_exp '*=' assignment_exp . 
+
+ REDUCE  85  ']' ';' ',' ')'
+
+ *** KERNEL : 133
+ ACCESS SYMBOL :  assignment_exp
+ assignment_exp ->  unary_exp '%=' assignment_exp . 
+
+ REDUCE  87  ']' ';' ',' ')'
+
+ *** KERNEL : 134
+ ACCESS SYMBOL :  unary_exp
+ multiplicative_exp ->  unary_exp . 
+
+ REDUCE 103  '||' ']' '>=' '>' '==' '<=' '<' ';' '/' '-'
+             ',' '+' '*' ')' '&&' '%' '!='
+
+ *** KERNEL : 135
+ ACCESS SYMBOL :  additive_exp
+ relational_exp ->  relational_exp '>=' additive_exp . 
+ additive_exp ->  additive_exp .  '+' multiplicative_exp
+ additive_exp ->  additive_exp .  '-' multiplicative_exp
+
+ REDUCE  98  '||' ']' '>=' '>' '==' '<=' '<' ';' ',' ')'
+             '&&' '!='
+ SHIFT 111  '+'
+ SHIFT 110  '-'
+
+ *** KERNEL : 136
+ ACCESS SYMBOL :  additive_exp
+ relational_exp ->  relational_exp '>' additive_exp . 
+ additive_exp ->  additive_exp .  '+' multiplicative_exp
+ additive_exp ->  additive_exp .  '-' multiplicative_exp
+
+ REDUCE  96  '||' ']' '>=' '>' '==' '<=' '<' ';' ',' ')'
+             '&&' '!='
+ SHIFT 111  '+'
+ SHIFT 110  '-'
+
+ *** KERNEL : 137
+ ACCESS SYMBOL :  additive_exp
+ relational_exp ->  relational_exp '<=' additive_exp . 
+ additive_exp ->  additive_exp .  '+' multiplicative_exp
+ additive_exp ->  additive_exp .  '-' multiplicative_exp
+
+ REDUCE  99  '||' ']' '>=' '>' '==' '<=' '<' ';' ',' ')'
+             '&&' '!='
+ SHIFT 111  '+'
+ SHIFT 110  '-'
+
+ *** KERNEL : 138
+ ACCESS SYMBOL :  additive_exp
+ relational_exp ->  relational_exp '<' additive_exp . 
+ additive_exp ->  additive_exp .  '+' multiplicative_exp
+ additive_exp ->  additive_exp .  '-' multiplicative_exp
+
+ REDUCE  97  '||' ']' '>=' '>' '==' '<=' '<' ';' ',' ')'
+             '&&' '!='
+ SHIFT 111  '+'
+ SHIFT 110  '-'
+
+ *** KERNEL : 139
+ ACCESS SYMBOL :  expression
+ postfix_exp ->  postfix_exp '[' expression .  ']'
+
+ SHIFT 162  ']'
+
+ *** KERNEL : 140
+ ACCESS SYMBOL :  opt_actual_param
+ postfix_exp ->  postfix_exp '(' opt_actual_param .  ')'
+
+ SHIFT 163  ')'
+
+ *** KERNEL : 141
+ ACCESS SYMBOL :  assignment_exp
+ actual_param_list ->  assignment_exp . 
+
+ REDUCE 120  ',' ')'
+
+ *** KERNEL : 142
+ ACCESS SYMBOL :  actual_param_list
+ actual_param ->  actual_param_list . 
+ actual_param_list ->  actual_param_list .  ',' assignment_exp
+
+ REDUCE 119  ')'
+ SHIFT 164  ','
+
+ *** KERNEL : 143
+ ACCESS SYMBOL :  actual_param
+ opt_actual_param ->  actual_param . 
+
+ REDUCE 117  ')'
+
+ *** KERNEL : 144
+ ACCESS SYMBOL :  unary_exp
+ multiplicative_exp ->  multiplicative_exp '/' unary_exp . 
+
+ REDUCE 105  '||' ']' '>=' '>' '==' '<=' '<' ';' '/' '-'
+             ',' '+' '*' ')' '&&' '%' '!='
+
+ *** KERNEL : 145
+ ACCESS SYMBOL :  unary_exp
+ multiplicative_exp ->  multiplicative_exp '*' unary_exp . 
+
+ REDUCE 104  '||' ']' '>=' '>' '==' '<=' '<' ';' '/' '-'
+             ',' '+' '*' ')' '&&' '%' '!='
+
+ *** KERNEL : 146
+ ACCESS SYMBOL :  unary_exp
+ multiplicative_exp ->  multiplicative_exp '%' unary_exp . 
+
+ REDUCE 106  '||' ']' '>=' '>' '==' '<=' '<' ';' '/' '-'
+             ',' '+' '*' ')' '&&' '%' '!='
+
+ *** KERNEL : 147
+ ACCESS SYMBOL :  logical_and_exp
+ logical_or_exp ->  logical_or_exp '||' logical_and_exp . 
+ logical_and_exp ->  logical_and_exp .  '&&' equality_exp
+
+ REDUCE  89  '||' ']' ';' ',' ')'
+ SHIFT 107  '&&'
+
+ *** KERNEL : 148
+ ACCESS SYMBOL :  equality_exp
+ logical_and_exp ->  logical_and_exp '&&' equality_exp . 
+ equality_exp ->  equality_exp .  '==' relational_exp
+ equality_exp ->  equality_exp .  '!=' relational_exp
+
+ REDUCE  91  '||' ']' ';' ',' ')' '&&'
+ SHIFT 109  '!='
+ SHIFT 108  '=='
+
+ *** KERNEL : 149
+ ACCESS SYMBOL :  relational_exp
+ equality_exp ->  equality_exp '==' relational_exp . 
+ relational_exp ->  relational_exp .  '>' additive_exp
+ relational_exp ->  relational_exp .  '<' additive_exp
+ relational_exp ->  relational_exp .  '>=' additive_exp
+ relational_exp ->  relational_exp .  '<=' additive_exp
+
+ REDUCE  93  '||' ']' '==' ';' ',' ')' '&&' '!='
+ SHIFT  96  '<'
+ SHIFT  95  '<='
+ SHIFT  94  '>'
+ SHIFT  93  '>='
+
+ *** KERNEL : 150
+ ACCESS SYMBOL :  relational_exp
+ equality_exp ->  equality_exp '!=' relational_exp . 
+ relational_exp ->  relational_exp .  '>' additive_exp
+ relational_exp ->  relational_exp .  '<' additive_exp
+ relational_exp ->  relational_exp .  '>=' additive_exp
+ relational_exp ->  relational_exp .  '<=' additive_exp
+
+ REDUCE  94  '||' ']' '==' ';' ',' ')' '&&' '!='
+ SHIFT  96  '<'
+ SHIFT  95  '<='
+ SHIFT  94  '>'
+ SHIFT  93  '>='
+
+ *** KERNEL : 151
+ ACCESS SYMBOL :  multiplicative_exp
+ additive_exp ->  additive_exp '-' multiplicative_exp . 
+ multiplicative_exp ->  multiplicative_exp .  '*' unary_exp
+ multiplicative_exp ->  multiplicative_exp .  '/' unary_exp
+ multiplicative_exp ->  multiplicative_exp .  '%' unary_exp
+
+ REDUCE 102  '||' ']' '>=' '>' '==' '<=' '<' ';' '-' ','
+             '+' ')' '&&' '!='
+ SHIFT 105  '%'
+ SHIFT 104  '*'
+ SHIFT 103  '/'
+
+ *** KERNEL : 152
+ ACCESS SYMBOL :  multiplicative_exp
+ additive_exp ->  additive_exp '+' multiplicative_exp . 
+ multiplicative_exp ->  multiplicative_exp .  '*' unary_exp
+ multiplicative_exp ->  multiplicative_exp .  '/' unary_exp
+ multiplicative_exp ->  multiplicative_exp .  '%' unary_exp
+
+ REDUCE 101  '||' ']' '>=' '>' '==' '<=' '<' ';' '-' ','
+             '+' ')' '&&' '!='
+ SHIFT 105  '%'
+ SHIFT 104  '*'
+ SHIFT 103  '/'
+
+ *** KERNEL : 153
+ ACCESS SYMBOL :  expression
+ while_st ->  'while' '(' expression .  ')' statement
+
+ SHIFT 165  ')'
+
+ *** KERNEL : 154
+ ACCESS SYMBOL :  declarator
+ switch_st ->  'switch' '(' declarator .  ')' '{' switch_case_list '}'
+
+ SHIFT 166  ')'
+
+ *** KERNEL : 155
+ ACCESS SYMBOL :  ';'
+ return_st ->  'return' opt_expression ';' . 
+
+ REDUCE  59  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL : 156
+ ACCESS SYMBOL :  expression
+ if_st ->  'if' '(' expression .  ')' statement
+ if_st ->  'if' '(' expression .  ')' statement 'else' statement
+
+ SHIFT 167  ')'
+
+ *** KERNEL : 157
+ ACCESS SYMBOL :  init_declarator
+ for_dcl_list ->  init_declarator . 
+
+ REDUCE  66  ';' ','
+
+ *** KERNEL : 158
+ ACCESS SYMBOL :  for_dcl_list
+ for_dcl ->  for_dcl_list . 
+ for_dcl_list ->  for_dcl_list .  ',' init_declarator
+
+ REDUCE  63  ';'
+ SHIFT 168  ','
+
+ *** KERNEL : 159
+ ACCESS SYMBOL :  for_dcl
+ for_st ->  'for' '(' for_dcl .  ';' for_exp ';' for_inc ')' statement
+
+ SHIFT 169  ';'
+
+ *** KERNEL : 160
+ ACCESS SYMBOL :  ')'
+ primary_exp ->  '(' expression ')' . 
+
+ REDUCE 124  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL : 161
+ ACCESS SYMBOL :  param_dcl
+ formal_param_list ->  formal_param_list ',' param_dcl . 
+
+ REDUCE  21  ',' ')'
+
+ *** KERNEL : 162
+ ACCESS SYMBOL :  ']'
+ postfix_exp ->  postfix_exp '[' expression ']' . 
+
+ REDUCE 113  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL : 163
+ ACCESS SYMBOL :  ')'
+ postfix_exp ->  postfix_exp '(' opt_actual_param ')' . 
+
+ REDUCE 114  '||' ']' '[' '>=' '>' '==' '=' '<=' '<' ';'
+             '/=' '/' '-=' '--' '-' ',' '+=' '++' '+' '*='
+             '*' ')' '(' '&&' '%=' '%' '!='
+
+ *** KERNEL : 164
+ ACCESS SYMBOL :  ','
+ actual_param_list ->  actual_param_list ',' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 170  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL : 165
+ ACCESS SYMBOL :  ')'
+ while_st ->  'while' '(' expression ')' .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT 171  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 166
+ ACCESS SYMBOL :  ')'
+ switch_st ->  'switch' '(' declarator ')' .  '{' switch_case_list '}'
+
+ SHIFT 172  '{'
+
+ *** KERNEL : 167
+ ACCESS SYMBOL :  ')'
+ if_st ->  'if' '(' expression ')' .  statement
+ if_st ->  'if' '(' expression ')' .  statement 'else' statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT 173  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 168
+ ACCESS SYMBOL :  ','
+ for_dcl_list ->  for_dcl_list ',' .  init_declarator
+ init_declarator ->  .  declarator
+ init_declarator ->  .  declarator '=' '%number'
+ declarator ->  .  '%ident'
+ declarator ->  .  '%ident' '[' opt_number ']'
+
+ SHIFT  77  '%ident'
+ SHIFT  23  declarator
+ SHIFT 174  init_declarator
+
+ *** KERNEL : 169
+ ACCESS SYMBOL :  ';'
+ for_st ->  'for' '(' for_dcl ';' .  for_exp ';' for_inc ')' statement
+ for_exp ->  .  logical_or_exp
+ for_exp ->  . 
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+
+ REDUCE  68  ';'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT  55  equality_exp
+ SHIFT 176  for_exp
+ SHIFT  49  logical_and_exp
+ SHIFT 175  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT 134  unary_exp
+
+ *** KERNEL : 170
+ ACCESS SYMBOL :  assignment_exp
+ actual_param_list ->  actual_param_list ',' assignment_exp . 
+
+ REDUCE 121  ',' ')'
+
+ *** KERNEL : 171
+ ACCESS SYMBOL :  statement
+ while_st ->  'while' '(' expression ')' statement . 
+
+ REDUCE  58  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL : 172
+ ACCESS SYMBOL :  '{'
+ switch_st ->  'switch' '(' declarator ')' '{' .  switch_case_list '}'
+ switch_case_list ->  .  switch_case_list switch_case
+ switch_case_list ->  .  switch_case
+ switch_case ->  .  'case' '%number' ':' statement_list
+ switch_case ->  .  'case' '%number'
+ switch_case ->  .  'default' ':' statement_list
+ switch_case ->  .  'default' ':'
+
+ SHIFT 180  'case'
+ SHIFT 179  'default'
+ SHIFT 178  switch_case
+ SHIFT 177  switch_case_list
+
+ *** KERNEL : 173
+ ACCESS SYMBOL :  statement
+ if_st ->  'if' '(' expression ')' statement . 
+ if_st ->  'if' '(' expression ')' statement .  'else' statement
+
+ REDUCE  56  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+ SHIFT 181  'else'
+
+ *** CONFLICT SYMBOL :  'else'
+
+ *** KERNEL : 173
+ ACCESS SYMBOL :  statement
+ if_st ->  'if' '(' expression ')' statement . 
+ if_st ->  'if' '(' expression ')' statement .  'else' statement
+
+ REDUCE  56  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+ SHIFT 181  'else'
+
+ *** KERNEL : 174
+ ACCESS SYMBOL :  init_declarator
+ for_dcl_list ->  for_dcl_list ',' init_declarator . 
+
+ REDUCE  65  ';' ','
+
+ *** KERNEL : 175
+ ACCESS SYMBOL :  logical_or_exp
+ for_exp ->  logical_or_exp . 
+ logical_or_exp ->  logical_or_exp .  '||' logical_and_exp
+
+ REDUCE  67  ';'
+ SHIFT 106  '||'
+
+ *** KERNEL : 176
+ ACCESS SYMBOL :  for_exp
+ for_st ->  'for' '(' for_dcl ';' for_exp .  ';' for_inc ')' statement
+
+ SHIFT 182  ';'
+
+ *** KERNEL : 177
+ ACCESS SYMBOL :  switch_case_list
+ switch_st ->  'switch' '(' declarator ')' '{' switch_case_list .  '}'
+ switch_case_list ->  switch_case_list .  switch_case
+ switch_case ->  .  'case' '%number' ':' statement_list
+ switch_case ->  .  'case' '%number'
+ switch_case ->  .  'default' ':' statement_list
+ switch_case ->  .  'default' ':'
+
+ SHIFT 180  'case'
+ SHIFT 179  'default'
+ SHIFT 184  '}'
+ SHIFT 183  switch_case
+
+ *** KERNEL : 178
+ ACCESS SYMBOL :  switch_case
+ switch_case_list ->  switch_case . 
+
+ REDUCE  75  '}' 'default' 'case'
+
+ *** KERNEL : 179
+ ACCESS SYMBOL :  'default'
+ switch_case ->  'default' .  ':' statement_list
+ switch_case ->  'default' .  ':'
+
+ SHIFT 185  ':'
+
+ *** KERNEL : 180
+ ACCESS SYMBOL :  'case'
+ switch_case ->  'case' .  '%number' ':' statement_list
+ switch_case ->  'case' .  '%number'
+
+ SHIFT 186  '%number'
+
+ *** KERNEL : 181
+ ACCESS SYMBOL :  'else'
+ if_st ->  'if' '(' expression ')' statement 'else' .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT 187  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 182
+ ACCESS SYMBOL :  ';'
+ for_st ->  'for' '(' for_dcl ';' for_exp ';' .  for_inc ')' statement
+ for_inc ->  .  for_inc_list
+ for_inc ->  . 
+ for_inc_list ->  .  assignment_exp
+ for_inc_list ->  .  for_inc_list ',' assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  70  ')'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 190  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT 189  for_inc
+ SHIFT 188  for_inc_list
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL : 183
+ ACCESS SYMBOL :  switch_case
+ switch_case_list ->  switch_case_list switch_case . 
+
+ REDUCE  74  '}' 'default' 'case'
+
+ *** KERNEL : 184
+ ACCESS SYMBOL :  '}'
+ switch_st ->  'switch' '(' declarator ')' '{' switch_case_list '}' . 
+
+ REDUCE  73  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL : 185
+ ACCESS SYMBOL :  ':'
+ switch_case ->  'default' ':' .  statement_list
+ switch_case ->  'default' ':' . 
+ statement_list ->  .  statement
+ statement_list ->  .  statement_list statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ REDUCE  79  '}' 'default' 'case'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  39  statement
+ SHIFT 191  statement_list
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 186
+ ACCESS SYMBOL :  '%number'
+ switch_case ->  'case' '%number' .  ':' statement_list
+ switch_case ->  'case' '%number' . 
+
+ REDUCE  77  '}' 'default' 'case'
+ SHIFT 192  ':'
+
+ *** KERNEL : 187
+ ACCESS SYMBOL :  statement
+ if_st ->  'if' '(' expression ')' statement 'else' statement . 
+
+ REDUCE  57  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ *** KERNEL : 188
+ ACCESS SYMBOL :  for_inc_list
+ for_inc ->  for_inc_list . 
+ for_inc_list ->  for_inc_list .  ',' assignment_exp
+
+ REDUCE  69  ')'
+ SHIFT 193  ','
+
+ *** KERNEL : 189
+ ACCESS SYMBOL :  for_inc
+ for_st ->  'for' '(' for_dcl ';' for_exp ';' for_inc .  ')' statement
+
+ SHIFT 194  ')'
+
+ *** KERNEL : 190
+ ACCESS SYMBOL :  assignment_exp
+ for_inc_list ->  assignment_exp . 
+
+ REDUCE  71  ',' ')'
+
+ *** KERNEL : 191
+ ACCESS SYMBOL :  statement_list
+ switch_case ->  'default' ':' statement_list . 
+ statement_list ->  statement_list .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ REDUCE  78  '}' 'default' 'case'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  92  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 192
+ ACCESS SYMBOL :  ':'
+ switch_case ->  'case' '%number' ':' .  statement_list
+ statement_list ->  .  statement
+ statement_list ->  .  statement_list statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  39  statement
+ SHIFT 195  statement_list
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 193
+ ACCESS SYMBOL :  ','
+ for_inc_list ->  for_inc_list ',' .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  61  additive_exp
+ SHIFT 196  assignment_exp
+ SHIFT  55  equality_exp
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  46  multiplicative_exp
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  36  unary_exp
+
+ *** KERNEL : 194
+ ACCESS SYMBOL :  ')'
+ for_st ->  'for' '(' for_dcl ';' for_exp ';' for_inc ')' .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT 197  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 195
+ ACCESS SYMBOL :  statement_list
+ switch_case ->  'case' '%number' ':' statement_list . 
+ statement_list ->  statement_list .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
+
+ REDUCE  55  ';'
+ REDUCE  76  '}' 'default' 'case'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  92  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
+
+ *** KERNEL : 196
+ ACCESS SYMBOL :  assignment_exp
+ for_inc_list ->  for_inc_list ',' assignment_exp . 
+
+ REDUCE  72  ',' ')'
+
+ *** KERNEL : 197
+ ACCESS SYMBOL :  statement
+ for_st ->  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement . 
+
+ REDUCE  62  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'else' 'default' 'continue'
+             'case' 'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
+
+ **** LAST STATE IN CONFLICT :  173
