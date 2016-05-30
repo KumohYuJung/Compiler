@@ -266,7 +266,7 @@ switch_case_list:
 	}
 	;
 switch_case:
-	TCASE TINTEGER ':' statement {
+	TCASE TINTEGER ':' statement_list {
 		Node *son = buildNode(NUMBER, $2);
 		appendBrother(son, $4);
 		$$ = buildTree(CASE_ST, son);		
@@ -275,7 +275,7 @@ switch_case:
 		Node * son = buildNode(NUMBER, $2);
 		$$ = buildTree(CASE_ST, son);		
 	}
-	| TDEFAULT ':' statement {
+	| TDEFAULT ':' statement_list {
 		$$ = buildTree(DEFAULT_ST, $3);
 	} 
 	| TDEFAULT ':'{

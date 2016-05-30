@@ -83,9 +83,9 @@
    83 switch_st        -> 'switch' '(' declarator ')' '{' switch_case_list '}' => SWITCH_ST;
    84 switch_case_list -> switch_case_list switch_case;
    85                  -> switch_case;
-   86 switch_case      -> 'case' '%number' ':' statement          => CASE_ST;
+   86 switch_case      -> 'case' '%number' ':' statement_list     => CASE_ST;
    87                  -> 'case' '%number'                        => CASE_ST;
-   88                  -> 'default' ':' statement                 => DEFAULT_ST;
+   88                  -> 'default' ':' statement_list            => DEFAULT_ST;
    89                  -> 'default' ':'                           => DEFAULT_ST;
    90 expression       -> assignment_exp;
    91 assignment_exp   -> logical_or_exp;
@@ -638,7 +638,7 @@
                        Terminal:  'case'(   3,  86,  21)
                        Terminal:  '%number'(   3,  86,  28)
                        Terminal:  ':'(   3,  86,  38)
-                       Terminal:  statement(   2,  86,  42)
+                       Terminal:  statement_list(   2,  86,  42)
                   Nonterminal:  14
                        Terminal:  CASE_ST(   2,  86,  64)
              Nonterminal:  10
@@ -651,7 +651,7 @@
                   Nonterminal:  11
                        Terminal:  'default'(   3,  88,  21)
                        Terminal:  ':'(   3,  88,  31)
-                       Terminal:  statement(   2,  88,  35)
+                       Terminal:  statement_list(   2,  88,  35)
                   Nonterminal:  14
                        Terminal:  DEFAULT_ST(   2,  88,  64)
              Nonterminal:  10
@@ -1124,9 +1124,9 @@
   ->  switch_case_list  switch_case ;
   ->  switch_case ;
  switch_case                                   -- RULE NUMBER: 76
-  ->  'case'  '%number'  ':'  statement                           =>  CASE_ST;
+  ->  'case'  '%number'  ':'  statement_list                      =>  CASE_ST;
   ->  'case'  '%number'                                           =>  CASE_ST;
-  ->  'default'  ':'  statement                                   =>  DEFAULT_ST;
+  ->  'default'  ':'  statement_list                              =>  DEFAULT_ST;
   ->  'default'  ':'                                              =>  DEFAULT_ST;
  expression                                    -- RULE NUMBER: 80
   ->  assignment_exp ;
@@ -1294,9 +1294,9 @@
  relational_exp       99   99*  98   98*  97   97*  96   96*  95*
                       94   93   92 
  return_st            59*  50 
- statement            58   78   76   40   39   45*  44*  43*  42*  41*
-                      57   57   56   62 
- statement_list       40   40*  39*  37 
+ statement            58   40   39   45*  44*  43*  42*  41*  57   57 
+                      56   62 
+ statement_list       78   76   40   40*  39*  37 
  switch_case          75   74   79*  78*  77*  76*
  switch_case_list     73   75*  74   74*
  switch_st            73*  49 
@@ -1984,8 +1984,8 @@
  ACCESS SYMBOL :  statement
  statement_list ->  statement . 
 
- REDUCE  39  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'continue' 'break' ';'
-             '--' '-' '++' '(' '%number' '%ident' '!'
+ REDUCE  39  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'default' 'continue' 'case'
+             'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
 
  *** KERNEL :  40
  ACCESS SYMBOL :  return_st
@@ -2902,8 +2902,8 @@
  ACCESS SYMBOL :  statement
  statement_list ->  statement_list statement . 
 
- REDUCE  40  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'continue' 'break' ';'
-             '--' '-' '++' '(' '%number' '%ident' '!'
+ REDUCE  40  '}' '{' 'while' 'switch' 'return' 'if' 'for' 'default' 'continue' 'case'
+             'break' ';' '--' '-' '++' '(' '%number' '%ident' '!'
 
  *** KERNEL :  93
  ACCESS SYMBOL :  '>='
@@ -4467,9 +4467,9 @@
  switch_st ->  'switch' '(' declarator ')' '{' .  switch_case_list '}'
  switch_case_list ->  .  switch_case_list switch_case
  switch_case_list ->  .  switch_case
- switch_case ->  .  'case' '%number' ':' statement
+ switch_case ->  .  'case' '%number' ':' statement_list
  switch_case ->  .  'case' '%number'
- switch_case ->  .  'default' ':' statement
+ switch_case ->  .  'default' ':' statement_list
  switch_case ->  .  'default' ':'
 
  SHIFT 180  'case'
@@ -4521,9 +4521,9 @@
  ACCESS SYMBOL :  switch_case_list
  switch_st ->  'switch' '(' declarator ')' '{' switch_case_list .  '}'
  switch_case_list ->  switch_case_list .  switch_case
- switch_case ->  .  'case' '%number' ':' statement
+ switch_case ->  .  'case' '%number' ':' statement_list
  switch_case ->  .  'case' '%number'
- switch_case ->  .  'default' ':' statement
+ switch_case ->  .  'default' ':' statement_list
  switch_case ->  .  'default' ':'
 
  SHIFT 180  'case'
@@ -4539,14 +4539,14 @@
 
  *** KERNEL : 179
  ACCESS SYMBOL :  'default'
- switch_case ->  'default' .  ':' statement
+ switch_case ->  'default' .  ':' statement_list
  switch_case ->  'default' .  ':'
 
  SHIFT 185  ':'
 
  *** KERNEL : 180
  ACCESS SYMBOL :  'case'
- switch_case ->  'case' .  '%number' ':' statement
+ switch_case ->  'case' .  '%number' ':' statement_list
  switch_case ->  'case' .  '%number'
 
  SHIFT 186  '%number'
@@ -4744,8 +4744,10 @@
 
  *** KERNEL : 185
  ACCESS SYMBOL :  ':'
- switch_case ->  'default' ':' .  statement
+ switch_case ->  'default' ':' .  statement_list
  switch_case ->  'default' ':' . 
+ statement_list ->  .  statement
+ statement_list ->  .  statement_list statement
  statement ->  .  compound_st
  statement ->  .  expression_st
  statement ->  .  condition_st
@@ -4849,14 +4851,15 @@
  SHIFT  42  primary_exp
  SHIFT  41  relational_exp
  SHIFT  40  return_st
- SHIFT 191  statement
+ SHIFT  39  statement
+ SHIFT 191  statement_list
  SHIFT  37  switch_st
  SHIFT  36  unary_exp
  SHIFT  35  while_st
 
  *** KERNEL : 186
  ACCESS SYMBOL :  '%number'
- switch_case ->  'case' '%number' .  ':' statement
+ switch_case ->  'case' '%number' .  ':' statement_list
  switch_case ->  'case' '%number' . 
 
  REDUCE  77  '}' 'default' 'case'
@@ -4890,14 +4893,122 @@
  REDUCE  71  ',' ')'
 
  *** KERNEL : 191
- ACCESS SYMBOL :  statement
- switch_case ->  'default' ':' statement . 
+ ACCESS SYMBOL :  statement_list
+ switch_case ->  'default' ':' statement_list . 
+ statement_list ->  statement_list .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
 
+ REDUCE  55  ';'
  REDUCE  78  '}' 'default' 'case'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  92  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
 
  *** KERNEL : 192
  ACCESS SYMBOL :  ':'
- switch_case ->  'case' '%number' ':' .  statement
+ switch_case ->  'case' '%number' ':' .  statement_list
+ statement_list ->  .  statement
+ statement_list ->  .  statement_list statement
  statement ->  .  compound_st
  statement ->  .  expression_st
  statement ->  .  condition_st
@@ -5000,7 +5111,8 @@
  SHIFT  42  primary_exp
  SHIFT  41  relational_exp
  SHIFT  40  return_st
- SHIFT 195  statement
+ SHIFT  39  statement
+ SHIFT 195  statement_list
  SHIFT  37  switch_st
  SHIFT  36  unary_exp
  SHIFT  35  while_st
@@ -5177,10 +5289,116 @@
  SHIFT  35  while_st
 
  *** KERNEL : 195
- ACCESS SYMBOL :  statement
- switch_case ->  'case' '%number' ':' statement . 
+ ACCESS SYMBOL :  statement_list
+ switch_case ->  'case' '%number' ':' statement_list . 
+ statement_list ->  statement_list .  statement
+ statement ->  .  compound_st
+ statement ->  .  expression_st
+ statement ->  .  condition_st
+ statement ->  .  loop_st
+ statement ->  .  flow_st
+ compound_st ->  .  '{' opt_dcl_list opt_stat_list '}'
+ expression_st ->  .  opt_expression ';'
+ condition_st ->  .  if_st
+ condition_st ->  .  switch_st
+ loop_st ->  .  for_st
+ loop_st ->  .  while_st
+ flow_st ->  .  return_st
+ flow_st ->  .  continue_st
+ flow_st ->  .  break_st
+ opt_expression ->  .  expression
+ opt_expression ->  . 
+ if_st ->  .  'if' '(' expression ')' statement
+ if_st ->  .  'if' '(' expression ')' statement 'else' statement
+ switch_st ->  .  'switch' '(' declarator ')' '{' switch_case_list '}'
+ for_st ->  .  'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement
+ while_st ->  .  'while' '(' expression ')' statement
+ return_st ->  .  'return' opt_expression ';'
+ continue_st ->  .  'continue' ';'
+ break_st ->  .  'break' ';'
+ expression ->  .  assignment_exp
+ assignment_exp ->  .  logical_or_exp
+ assignment_exp ->  .  unary_exp '=' assignment_exp
+ assignment_exp ->  .  unary_exp '+=' assignment_exp
+ assignment_exp ->  .  unary_exp '-=' assignment_exp
+ assignment_exp ->  .  unary_exp '*=' assignment_exp
+ assignment_exp ->  .  unary_exp '/=' assignment_exp
+ assignment_exp ->  .  unary_exp '%=' assignment_exp
+ logical_or_exp ->  .  logical_and_exp
+ logical_or_exp ->  .  logical_or_exp '||' logical_and_exp
+ unary_exp ->  .  postfix_exp
+ unary_exp ->  .  '-' unary_exp
+ unary_exp ->  .  '!' unary_exp
+ unary_exp ->  .  '++' unary_exp
+ unary_exp ->  .  '--' unary_exp
+ logical_and_exp ->  .  equality_exp
+ logical_and_exp ->  .  logical_and_exp '&&' equality_exp
+ postfix_exp ->  .  primary_exp
+ postfix_exp ->  .  postfix_exp '[' expression ']'
+ postfix_exp ->  .  postfix_exp '(' opt_actual_param ')'
+ postfix_exp ->  .  postfix_exp '++'
+ postfix_exp ->  .  postfix_exp '--'
+ equality_exp ->  .  relational_exp
+ equality_exp ->  .  equality_exp '==' relational_exp
+ equality_exp ->  .  equality_exp '!=' relational_exp
+ primary_exp ->  .  '%ident'
+ primary_exp ->  .  '%number'
+ primary_exp ->  .  '(' expression ')'
+ relational_exp ->  .  additive_exp
+ relational_exp ->  .  relational_exp '>' additive_exp
+ relational_exp ->  .  relational_exp '<' additive_exp
+ relational_exp ->  .  relational_exp '>=' additive_exp
+ relational_exp ->  .  relational_exp '<=' additive_exp
+ additive_exp ->  .  multiplicative_exp
+ additive_exp ->  .  additive_exp '+' multiplicative_exp
+ additive_exp ->  .  additive_exp '-' multiplicative_exp
+ multiplicative_exp ->  .  unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '*' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '/' unary_exp
+ multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
 
+ REDUCE  55  ';'
  REDUCE  76  '}' 'default' 'case'
+ SHIFT  75  '!'
+ SHIFT  74  '%ident'
+ SHIFT  73  '%number'
+ SHIFT  72  '('
+ SHIFT  71  '++'
+ SHIFT  70  '-'
+ SHIFT  69  '--'
+ SHIFT  68  'break'
+ SHIFT  67  'continue'
+ SHIFT  66  'for'
+ SHIFT  65  'if'
+ SHIFT  64  'return'
+ SHIFT  63  'switch'
+ SHIFT  62  'while'
+ SHIFT  18  '{'
+ SHIFT  61  additive_exp
+ SHIFT  60  assignment_exp
+ SHIFT  59  break_st
+ SHIFT  58  compound_st
+ SHIFT  57  condition_st
+ SHIFT  56  continue_st
+ SHIFT  55  equality_exp
+ SHIFT  54  expression
+ SHIFT  53  expression_st
+ SHIFT  52  flow_st
+ SHIFT  51  for_st
+ SHIFT  50  if_st
+ SHIFT  49  logical_and_exp
+ SHIFT  48  logical_or_exp
+ SHIFT  47  loop_st
+ SHIFT  46  multiplicative_exp
+ SHIFT  45  opt_expression
+ SHIFT  43  postfix_exp
+ SHIFT  42  primary_exp
+ SHIFT  41  relational_exp
+ SHIFT  40  return_st
+ SHIFT  92  statement
+ SHIFT  37  switch_st
+ SHIFT  36  unary_exp
+ SHIFT  35  while_st
 
  *** KERNEL : 196
  ACCESS SYMBOL :  assignment_exp
