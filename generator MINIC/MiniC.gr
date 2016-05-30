@@ -11,7 +11,6 @@ translation_unit -> external_dcl;
                  -> translation_unit external_dcl;
 external_dcl     -> function_def;
                  -> declaration;
-
 function_def     -> function_header compound_st            => FUNC_DEF;
 function_header  -> dcl_spec function_name formal_param    => FUNC_HEAD;
 dcl_spec         -> dcl_specifiers                         => DCL_SPEC;
@@ -29,7 +28,6 @@ opt_formal_param -> formal_param_list;
 formal_param_list-> param_dcl;
                  -> formal_param_list ',' param_dcl;
 param_dcl        -> dcl_spec declarator                    => PARAM_DCL;
-
 compound_st      -> '{' opt_dcl_list opt_stat_list '}'     => COMPOUND_ST;
 opt_dcl_list     -> declaration_list                       => DCL_LIST;
                  ->                                        => DCL_LIST;
@@ -85,9 +83,9 @@ for_inc_list     -> assignment_exp;
 switch_st        -> 'switch' '(' declarator ')' '{' switch_case_list '}' => SWITCH_ST;
 switch_case_list -> switch_case_list switch_case;
                  -> switch_case;
-switch_case      -> 'case' '%number' ':' statement_list     => CASE_ST;
+switch_case      -> 'case' '%number' ':' statement          => CASE_ST;
                  -> 'case' '%number'                        => CASE_ST;
-                 -> 'default' ':' statement_list            => DEFAULT_ST;
+                 -> 'default' ':' statement                 => DEFAULT_ST;
                  -> 'default' ':'                           => DEFAULT_ST;
 expression       -> assignment_exp;
 assignment_exp   -> logical_or_exp;
