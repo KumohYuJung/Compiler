@@ -15,7 +15,7 @@ Node *root;
 	char* string;
 	struct nodeType *nPtr;
 }
-
+/* Terminial */
 %token <string> TINTEGER
 %token <string> TIDENTITY
 %token TINT TVOID						/* qualifier */
@@ -33,6 +33,7 @@ Node *root;
 %left '+' '-'
 %left '*' '/'
 %nonassoc TUMINUS
+/* NonTerminal */
 %type <nPtr> translation_unit external_dcl function_def function_header dcl_spec dcl_specifiers
 	dcl_specifier type_qualifier type_specifier function_name formal_param opt_formal_param
 	formal_param_list param_dcl compound_st opt_dcl_list declaration_list declaration init_dcl_list

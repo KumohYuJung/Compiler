@@ -1,0 +1,79 @@
+├── LICENSE
+├── MiniC\ grammar\ generator
+│   ├── MiniC.gr
+│   ├── MiniC.lst
+│   ├── MiniC.tbl
+│   └── pgs.exe
+├── README.md
+├── lex
+│   ├── lex.yy.c
+│   ├── test
+│   ├── test.dat
+│   └── test.l
+├── parser
+│   ├── Makefile
+│   ├── README.md
+│   ├── mc
+│   │   ├── bubble.ast
+│   │   ├── bubble.mc
+│   │   ├── factorial.ast
+│   │   ├── factorial.mc
+│   │   ├── for_test.ast
+│   │   ├── for_test.mc
+│   │   ├── pal.ast
+│   │   ├── pal.mc
+│   │   ├── perfect.ast
+│   │   ├── perfect.mc
+│   │   ├── prime.ast
+│   │   ├── prime.mc
+│   │   ├── switch_test.ast
+│   │   └── switch_test.mc
+│   ├── minic
+│   ├── minic.ast
+│   ├── minic.c
+│   ├── minic.l
+│   ├── minic.tab.c
+│   ├── minic.tab.h
+│   ├── minic.y
+│   ├── minic_ast.c
+│   ├── minic_ast.h
+│   ├── parser
+│   ├── test.ast
+│   ├── test.mc
+│   ├── test.sh
+│   └── ucode
+│       ├── Ucodei
+│       ├── Ucodei.cpp
+│       ├── a.out
+│       ├── bubble.lst
+│       ├── bubble.uco
+│       ├── factorial.lst
+│       ├── factorial.uco
+│       ├── pal.lst
+│       ├── pal.uco
+│       ├── perfect.uco
+│       ├── prime.uco
+│       ├── setelt.lst
+│       ├── setelt.uco
+│       ├── test.lst
+│       ├── test.uco
+│       ├── test2.lst
+│       └── test2.uco
+├── tree.txt
+├── ucode
+│   ├── Ucodei.cpp
+│   ├── arti.lst
+│   ├── arti.uco
+│   ├── bubble.lst
+│   ├── bubble.uco
+│   ├── factorial.lst
+│   ├── factorial.uco
+│   ├── pal.lst
+│   ├── pal.uco
+│   ├── perfect.uco
+│   ├── prime.uco
+│   ├── setelt.uco
+│   └── uc
+└── Compiler 과제 보고서.hwp
+
+7 directories, 71 files
