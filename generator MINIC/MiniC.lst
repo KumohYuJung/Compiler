@@ -84,7 +84,7 @@
    84 switch_case_list -> switch_case_list switch_case;
    85                  -> switch_case;
    86 switch_case      -> 'case' '%number' ':' statement_list     => CASE_ST;
-   87                  -> 'case' '%number'                        => CASE_ST;
+   87                  -> 'case' '%number' ':'                    => CASE_ST;
    88                  -> 'default' ':' statement_list            => DEFAULT_ST;
    89                  -> 'default' ':'                           => DEFAULT_ST;
    90 expression       -> assignment_exp;
@@ -645,6 +645,7 @@
                   Nonterminal:  11
                        Terminal:  'case'(   3,  87,  21)
                        Terminal:  '%number'(   3,  87,  28)
+                       Terminal:  ':'(   3,  87,  38)
                   Nonterminal:  14
                        Terminal:  CASE_ST(   2,  87,  64)
              Nonterminal:  10
@@ -1125,7 +1126,7 @@
   ->  switch_case ;
  switch_case                                   -- RULE NUMBER: 76
   ->  'case'  '%number'  ':'  statement_list                      =>  CASE_ST;
-  ->  'case'  '%number'                                           =>  CASE_ST;
+  ->  'case'  '%number'  ':'                                      =>  CASE_ST;
   ->  'default'  ':'  statement_list                              =>  DEFAULT_ST;
   ->  'default'  ':'                                              =>  DEFAULT_ST;
  expression                                    -- RULE NUMBER: 80
@@ -1212,7 +1213,7 @@
  '-='                 84 
  '/'                 105 
  '/='                 86 
- ':'                  79   78   76 
+ ':'                  79   78   77   76 
  ';'                  59   62   62   53   28   60   61 
  '<'                  97 
  '<='                 99 
@@ -4468,7 +4469,7 @@
  switch_case_list ->  .  switch_case_list switch_case
  switch_case_list ->  .  switch_case
  switch_case ->  .  'case' '%number' ':' statement_list
- switch_case ->  .  'case' '%number'
+ switch_case ->  .  'case' '%number' ':'
  switch_case ->  .  'default' ':' statement_list
  switch_case ->  .  'default' ':'
 
@@ -4522,7 +4523,7 @@
  switch_st ->  'switch' '(' declarator ')' '{' switch_case_list .  '}'
  switch_case_list ->  switch_case_list .  switch_case
  switch_case ->  .  'case' '%number' ':' statement_list
- switch_case ->  .  'case' '%number'
+ switch_case ->  .  'case' '%number' ':'
  switch_case ->  .  'default' ':' statement_list
  switch_case ->  .  'default' ':'
 
@@ -4547,7 +4548,7 @@
  *** KERNEL : 180
  ACCESS SYMBOL :  'case'
  switch_case ->  'case' .  '%number' ':' statement_list
- switch_case ->  'case' .  '%number'
+ switch_case ->  'case' .  '%number' ':'
 
  SHIFT 186  '%number'
 
@@ -4860,9 +4861,8 @@
  *** KERNEL : 186
  ACCESS SYMBOL :  '%number'
  switch_case ->  'case' '%number' .  ':' statement_list
- switch_case ->  'case' '%number' . 
+ switch_case ->  'case' '%number' .  ':'
 
- REDUCE  77  '}' 'default' 'case'
  SHIFT 192  ':'
 
  *** KERNEL : 187
@@ -5007,6 +5007,7 @@
  *** KERNEL : 192
  ACCESS SYMBOL :  ':'
  switch_case ->  'case' '%number' ':' .  statement_list
+ switch_case ->  'case' '%number' ':' . 
  statement_list ->  .  statement
  statement_list ->  .  statement_list statement
  statement ->  .  compound_st
@@ -5075,6 +5076,7 @@
  multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
 
  REDUCE  55  ';'
+ REDUCE  77  '}' 'default' 'case'
  SHIFT  75  '!'
  SHIFT  74  '%ident'
  SHIFT  73  '%number'

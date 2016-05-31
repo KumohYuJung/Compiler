@@ -84,7 +84,7 @@ switch_st        -> 'switch' '(' declarator ')' '{' switch_case_list '}' => SWIT
 switch_case_list -> switch_case_list switch_case;
                  -> switch_case;
 switch_case      -> 'case' '%number' ':' statement_list     => CASE_ST;
-                 -> 'case' '%number'                        => CASE_ST;
+                 -> 'case' '%number' ':'                    => CASE_ST;
                  -> 'default' ':' statement_list            => DEFAULT_ST;
                  -> 'default' ':'                           => DEFAULT_ST;
 expression       -> assignment_exp;
