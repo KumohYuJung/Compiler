@@ -11,129 +11,127 @@
    11                  -> translation_unit external_dcl;
    12 external_dcl     -> function_def;
    13                  -> declaration;
-   14 
-   15 function_def     -> function_header compound_st            => FUNC_DEF;
-   16 function_header  -> dcl_spec function_name formal_param    => FUNC_HEAD;
-   17 dcl_spec         -> dcl_specifiers                         => DCL_SPEC;
-   18 dcl_specifiers   -> dcl_specifier;
-   19                  -> dcl_specifiers dcl_specifier;
-   20 dcl_specifier    -> type_qualifier;
-   21                  -> type_specifier;
-   22 type_qualifier   -> 'const'                                => CONST_TYPE;
-   23 type_specifier   -> 'int'                                  => INT_TYPE;
-   24                  -> 'void'                                 => VOID_TYPE;
-   25 function_name    -> '%ident';
-   26 formal_param     -> '(' opt_formal_param ')'               => FORMAL_PARA;
-   27 opt_formal_param -> formal_param_list;
-   28                  -> ;
-   29 formal_param_list-> param_dcl;
-   30                  -> formal_param_list ',' param_dcl;
-   31 param_dcl        -> dcl_spec declarator                    => PARAM_DCL;
-   32 
-   33 compound_st      -> '{' opt_dcl_list opt_stat_list '}'     => COMPOUND_ST;
-   34 opt_dcl_list     -> declaration_list                       => DCL_LIST;
-   35                  ->                                        => DCL_LIST;
-   36 declaration_list -> declaration;
-   37                  -> declaration_list declaration;
-   38 declaration      -> dcl_spec init_dcl_list ';'             => DCL;
-   39 init_dcl_list    -> init_declarator;
-   40                  -> init_dcl_list ',' init_declarator;
-   41 init_declarator  -> declarator                             => DCL_ITEM;
-   42                  -> declarator '=' '%number'               => DCL_ITEM;
-   43 declarator       -> '%ident'                               => SIMPLE_VAR;
-   44                  -> '%ident' '[' opt_number ']'            => ARRAY_VAR;
-   45 opt_number       -> '%number';
-   46                  -> ;
-   47                  
-   48 opt_stat_list    -> statement_list                         => STAT_LIST;
-   49                  -> ;
-   50 statement_list   -> statement;
-   51                  -> statement_list statement;
-   52 statement        -> compound_st;
-   53                  -> expression_st;
-   54                  -> condition_st;
-   55                  -> loop_st;
-   56                  -> flow_st;
-   57 loop_st          -> for_st;
-   58                  -> while_st;
-   59 condition_st     -> if_st;
-   60                  -> switch_st;
-   61 flow_st          -> return_st;
-   62                  -> continue_st;
-   63                  -> break_st;
-   64 expression_st    -> opt_expression ';'                     => EXP_ST;
-   65 opt_expression   -> expression;
-   66                  -> ;
-   67 if_st            -> 'if' '(' expression ')' statement      => IF_ST;
-   68                  -> 'if' '(' expression ')' statement
-   69                     'else' statement                       => IF_ELSE_ST;
-   70 while_st         -> 'while' '(' expression ')' statement   => WHILE_ST;
-   71 return_st        -> 'return' opt_expression ';'            => RETURN_ST;
-   72 continue_st      -> 'continue' ';'                         => CONTINUE_ST;
-   73 break_st         -> 'break' ';'                            => BREAK_ST;
-   74 for_st           -> 'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement => FOR_ST;
-   75 for_dcl          -> for_dcl_list                      => FOR_DCL;
-   76                  ->                                   => FOR_DCL;
-   77 for_dcl_list     -> for_dcl_list ',' init_declarator;
-   78                  -> init_declarator;                   
-   79 for_exp          -> logical_or_exp                        => FOR_EXP;
-   80                  ->                                      => FOR_EXP;
-   81 for_inc          -> for_inc_list                        => FOR_INC;
-   82                  ->                                    => FOR_INC;
-   83 for_inc_list     -> assignment_exp;
-   84                  -> for_inc_list ',' assignment_exp;
-   85 switch_st        -> 'switch' '(' declarator ')' '{' switch_case_list '}' => SWITCH_ST;
-   86 switch_case_list -> switch_case_list switch_case;
-   87                  -> switch_case;
-   88 switch_case      -> 'case' '%number' ':' statement_list     => CASE_ST;
-   89                  -> 'case' '%number'                        => CASE_ST;
-   90                  -> 'default' ':' statement_list            => DEFAULT_ST;
-   91                  -> 'default' ':'                           => DEFAULT_ST;
-   92 expression       -> assignment_exp;
-   93 assignment_exp   -> logical_or_exp;
-   94                  -> unary_exp '=' assignment_exp           => ASSIGN_OP;
-   95                  -> unary_exp '+=' assignment_exp          => ADD_ASSIGN;
-   96                  -> unary_exp '-=' assignment_exp          => SUB_ASSIGN;
-   97                  -> unary_exp '*=' assignment_exp          => MUL_ASSIGN;
-   98                  -> unary_exp '/=' assignment_exp          => DIV_ASSIGN;
-   99                  -> unary_exp '%=' assignment_exp          => MOD_ASSIGN;
-  100 logical_or_exp   -> logical_and_exp;
-  101                  -> logical_or_exp '||' logical_and_exp    => LOGICAL_OR;
-  102 logical_and_exp  -> equality_exp;
-  103                  -> logical_and_exp '&&' equality_exp      => LOGICAL_AND;
-  104 equality_exp     -> relational_exp;
-  105                  -> equality_exp '==' relational_exp       => EQ;
-  106                  -> equality_exp '!=' relational_exp       => NE;
-  107 relational_exp   -> additive_exp;
-  108                  -> relational_exp '>' additive_exp        => GT;
-  109                  -> relational_exp '<' additive_exp        => LT;
-  110                  -> relational_exp '>=' additive_exp       => GE;
-  111                  -> relational_exp '<=' additive_exp       => LE;
-  112 additive_exp     -> multiplicative_exp;
-  113                  -> additive_exp '+' multiplicative_exp    => ADD;
-  114                  -> additive_exp '-' multiplicative_exp    => SUB;
-  115 multiplicative_exp -> unary_exp;
-  116                    -> multiplicative_exp '*' unary_exp     => MUL;
-  117                    -> multiplicative_exp '/' unary_exp     => DIV;
-  118                    -> multiplicative_exp '%' unary_exp     => REMAINDER;
-  119 unary_exp          -> postfix_exp;
-  120                    -> '-' unary_exp                        => UNARY_MINUS;
-  121                    -> '!' unary_exp                        => LOGICAL_NOT;
-  122                    -> '++' unary_exp                       => PRE_INC;
-  123                    -> '--' unary_exp                       => PRE_DEC;
-  124 postfix_exp        -> primary_exp;
-  125                    -> postfix_exp '[' expression ']'       => INDEX;
-  126                    -> postfix_exp '(' opt_actual_param ')' => CALL;
-  127                    -> postfix_exp '++'                     => POST_INC;
-  128                    -> postfix_exp '--'                     => POST_DEC;
-  129 opt_actual_param   -> actual_param;
-  130                    -> ;
-  131 actual_param       -> actual_param_list                    => ACTUAL_PARAM;
-  132 actual_param_list  -> assignment_exp;
-  133                    -> actual_param_list ',' assignment_exp;
-  134 primary_exp        -> '%ident';
-  135                    -> '%number';
-  136                    -> '(' expression ')';                  
+   14 function_def     -> function_header compound_st            => FUNC_DEF;
+   15 function_header  -> dcl_spec function_name formal_param    => FUNC_HEAD;
+   16 dcl_spec         -> dcl_specifiers                         => DCL_SPEC;
+   17 dcl_specifiers   -> dcl_specifier;
+   18                  -> dcl_specifiers dcl_specifier;
+   19 dcl_specifier    -> type_qualifier;
+   20                  -> type_specifier;
+   21 type_qualifier   -> 'const'                                => CONST_TYPE;
+   22 type_specifier   -> 'int'                                  => INT_TYPE;
+   23                  -> 'void'                                 => VOID_TYPE;
+   24 function_name    -> '%ident';
+   25 formal_param     -> '(' opt_formal_param ')'               => FORMAL_PARA;
+   26 opt_formal_param -> formal_param_list;
+   27                  -> ;
+   28 formal_param_list-> param_dcl;
+   29                  -> formal_param_list ',' param_dcl;
+   30 param_dcl        -> dcl_spec declarator                    => PARAM_DCL;
+   31 compound_st      -> '{' opt_dcl_list opt_stat_list '}'     => COMPOUND_ST;
+   32 opt_dcl_list     -> declaration_list                       => DCL_LIST;
+   33                  ->                                        => DCL_LIST;
+   34 declaration_list -> declaration;
+   35                  -> declaration_list declaration;
+   36 declaration      -> dcl_spec init_dcl_list ';'             => DCL;
+   37 init_dcl_list    -> init_declarator;
+   38                  -> init_dcl_list ',' init_declarator;
+   39 init_declarator  -> declarator                             => DCL_ITEM;
+   40                  -> declarator '=' '%number'               => DCL_ITEM;
+   41 declarator       -> '%ident'                               => SIMPLE_VAR;
+   42                  -> '%ident' '[' opt_number ']'            => ARRAY_VAR;
+   43 opt_number       -> '%number';
+   44                  -> ;
+   45                  
+   46 opt_stat_list    -> statement_list                         => STAT_LIST;
+   47                  -> ;
+   48 statement_list   -> statement;
+   49                  -> statement_list statement;
+   50 statement        -> compound_st;
+   51                  -> expression_st;
+   52                  -> condition_st;
+   53                  -> loop_st;
+   54                  -> flow_st;
+   55 loop_st          -> for_st;
+   56                  -> while_st;
+   57 condition_st     -> if_st;
+   58                  -> switch_st;
+   59 flow_st          -> return_st;
+   60                  -> continue_st;
+   61                  -> break_st;
+   62 expression_st    -> opt_expression ';'                     => EXP_ST;
+   63 opt_expression   -> expression;
+   64                  -> ;
+   65 if_st            -> 'if' '(' expression ')' statement      => IF_ST;
+   66                  -> 'if' '(' expression ')' statement
+   67                     'else' statement                       => IF_ELSE_ST;
+   68 while_st         -> 'while' '(' expression ')' statement   => WHILE_ST;
+   69 return_st        -> 'return' opt_expression ';'            => RETURN_ST;
+   70 continue_st      -> 'continue' ';'                         => CONTINUE_ST;
+   71 break_st         -> 'break' ';'                            => BREAK_ST;
+   72 for_st           -> 'for' '(' for_dcl ';' for_exp ';' for_inc ')' statement => FOR_ST;
+   73 for_dcl          -> for_dcl_list                      => FOR_DCL;
+   74                  ->                                   => FOR_DCL;
+   75 for_dcl_list     -> for_dcl_list ',' init_declarator;
+   76                  -> init_declarator;                   
+   77 for_exp          -> logical_or_exp                        => FOR_EXP;
+   78                  ->                                      => FOR_EXP;
+   79 for_inc          -> for_inc_list                        => FOR_INC;
+   80                  ->                                    => FOR_INC;
+   81 for_inc_list     -> assignment_exp;
+   82                  -> for_inc_list ',' assignment_exp;
+   83 switch_st        -> 'switch' '(' declarator ')' '{' switch_case_list '}' => SWITCH_ST;
+   84 switch_case_list -> switch_case_list switch_case;
+   85                  -> switch_case;
+   86 switch_case      -> 'case' '%number' ':' statement_list     => CASE_ST;
+   87                  -> 'case' '%number' ':'                    => CASE_ST;
+   88                  -> 'default' ':' statement_list            => DEFAULT_ST;
+   89                  -> 'default' ':'                           => DEFAULT_ST;
+   90 expression       -> assignment_exp;
+   91 assignment_exp   -> logical_or_exp;
+   92                  -> unary_exp '=' assignment_exp           => ASSIGN_OP;
+   93                  -> unary_exp '+=' assignment_exp          => ADD_ASSIGN;
+   94                  -> unary_exp '-=' assignment_exp          => SUB_ASSIGN;
+   95                  -> unary_exp '*=' assignment_exp          => MUL_ASSIGN;
+   96                  -> unary_exp '/=' assignment_exp          => DIV_ASSIGN;
+   97                  -> unary_exp '%=' assignment_exp          => MOD_ASSIGN;
+   98 logical_or_exp   -> logical_and_exp;
+   99                  -> logical_or_exp '||' logical_and_exp    => LOGICAL_OR;
+  100 logical_and_exp  -> equality_exp;
+  101                  -> logical_and_exp '&&' equality_exp      => LOGICAL_AND;
+  102 equality_exp     -> relational_exp;
+  103                  -> equality_exp '==' relational_exp       => EQ;
+  104                  -> equality_exp '!=' relational_exp       => NE;
+  105 relational_exp   -> additive_exp;
+  106                  -> relational_exp '>' additive_exp        => GT;
+  107                  -> relational_exp '<' additive_exp        => LT;
+  108                  -> relational_exp '>=' additive_exp       => GE;
+  109                  -> relational_exp '<=' additive_exp       => LE;
+  110 additive_exp     -> multiplicative_exp;
+  111                  -> additive_exp '+' multiplicative_exp    => ADD;
+  112                  -> additive_exp '-' multiplicative_exp    => SUB;
+  113 multiplicative_exp -> unary_exp;
+  114                    -> multiplicative_exp '*' unary_exp     => MUL;
+  115                    -> multiplicative_exp '/' unary_exp     => DIV;
+  116                    -> multiplicative_exp '%' unary_exp     => REMAINDER;
+  117 unary_exp          -> postfix_exp;
+  118                    -> '-' unary_exp                        => UNARY_MINUS;
+  119                    -> '!' unary_exp                        => LOGICAL_NOT;
+  120                    -> '++' unary_exp                       => PRE_INC;
+  121                    -> '--' unary_exp                       => PRE_DEC;
+  122 postfix_exp        -> primary_exp;
+  123                    -> postfix_exp '[' expression ']'       => INDEX;
+  124                    -> postfix_exp '(' opt_actual_param ')' => CALL;
+  125                    -> postfix_exp '++'                     => POST_INC;
+  126                    -> postfix_exp '--'                     => POST_DEC;
+  127 opt_actual_param   -> actual_param;
+  128                    -> ;
+  129 actual_param       -> actual_param_list                    => ACTUAL_PARAM;
+  130 actual_param_list  -> assignment_exp;
+  131                    -> actual_param_list ',' assignment_exp;
+  132 primary_exp        -> '%ident';
+  133                    -> '%number';
+  134                    -> '(' expression ')';                  
  VALID SOURCE
 
 
@@ -187,769 +185,770 @@
                        Terminal:  declaration(   2,  13,  21)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  function_def(   2,  15,   1)
+             Terminal:  function_def(   2,  14,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  function_header(   2,  15,  21)
-                       Terminal:  compound_st(   2,  15,  37)
+                       Terminal:  function_header(   2,  14,  21)
+                       Terminal:  compound_st(   2,  14,  37)
                   Nonterminal:  14
-                       Terminal:  FUNC_DEF(   2,  15,  63)
+                       Terminal:  FUNC_DEF(   2,  14,  63)
         Nonterminal:   8
-             Terminal:  function_header(   2,  16,   1)
+             Terminal:  function_header(   2,  15,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  dcl_spec(   2,  16,  21)
-                       Terminal:  function_name(   2,  16,  30)
-                       Terminal:  formal_param(   2,  16,  44)
+                       Terminal:  dcl_spec(   2,  15,  21)
+                       Terminal:  function_name(   2,  15,  30)
+                       Terminal:  formal_param(   2,  15,  44)
                   Nonterminal:  14
-                       Terminal:  FUNC_HEAD(   2,  16,  63)
+                       Terminal:  FUNC_HEAD(   2,  15,  63)
         Nonterminal:   8
-             Terminal:  dcl_spec(   2,  17,   1)
+             Terminal:  dcl_spec(   2,  16,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  dcl_specifiers(   2,  17,  21)
+                       Terminal:  dcl_specifiers(   2,  16,  21)
                   Nonterminal:  14
-                       Terminal:  DCL_SPEC(   2,  17,  63)
+                       Terminal:  DCL_SPEC(   2,  16,  63)
         Nonterminal:   8
-             Terminal:  dcl_specifiers(   2,  18,   1)
+             Terminal:  dcl_specifiers(   2,  17,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  dcl_specifier(   2,  18,  21)
+                       Terminal:  dcl_specifier(   2,  17,  21)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  dcl_specifiers(   2,  19,  21)
-                       Terminal:  dcl_specifier(   2,  19,  36)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  dcl_specifier(   2,  20,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  type_qualifier(   2,  20,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  type_specifier(   2,  21,  21)
+                       Terminal:  dcl_specifiers(   2,  18,  21)
+                       Terminal:  dcl_specifier(   2,  18,  36)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  type_qualifier(   2,  22,   1)
+             Terminal:  dcl_specifier(   2,  19,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'const'(   3,  22,  21)
+                       Terminal:  type_qualifier(   2,  19,  21)
                   Nonterminal:  14
-                       Terminal:  CONST_TYPE(   2,  22,  63)
-        Nonterminal:   8
-             Terminal:  type_specifier(   2,  23,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'int'(   3,  23,  21)
-                  Nonterminal:  14
-                       Terminal:  INT_TYPE(   2,  23,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  'void'(   3,  24,  21)
-                  Nonterminal:  14
-                       Terminal:  VOID_TYPE(   2,  24,  63)
-        Nonterminal:   8
-             Terminal:  function_name(   2,  25,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  '%ident'(   3,  25,  21)
+                       Terminal:  type_specifier(   2,  20,  21)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  formal_param(   2,  26,   1)
+             Terminal:  type_qualifier(   2,  21,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '('(   3,  26,  21)
-                       Terminal:  opt_formal_param(   2,  26,  25)
-                       Terminal:  ')'(   3,  26,  42)
+                       Terminal:  'const'(   3,  21,  21)
                   Nonterminal:  14
-                       Terminal:  FORMAL_PARA(   2,  26,  63)
+                       Terminal:  CONST_TYPE(   2,  21,  63)
         Nonterminal:   8
-             Terminal:  opt_formal_param(   2,  27,   1)
+             Terminal:  type_specifier(   2,  22,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  formal_param_list(   2,  27,  21)
+                       Terminal:  'int'(   3,  22,  21)
                   Nonterminal:  14
+                       Terminal:  INT_TYPE(   2,  22,  63)
              Nonterminal:  10
                   Nonterminal:  11
+                       Terminal:  'void'(   3,  23,  21)
                   Nonterminal:  14
+                       Terminal:  VOID_TYPE(   2,  23,  63)
         Nonterminal:   8
-             Terminal:  formal_param_list(   2,  29,   1)
+             Terminal:  function_name(   2,  24,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  param_dcl(   2,  29,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  formal_param_list(   2,  30,  21)
-                       Terminal:  ','(   3,  30,  39)
-                       Terminal:  param_dcl(   2,  30,  43)
+                       Terminal:  '%ident'(   3,  24,  21)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  param_dcl(   2,  31,   1)
+             Terminal:  formal_param(   2,  25,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  dcl_spec(   2,  31,  21)
-                       Terminal:  declarator(   2,  31,  30)
+                       Terminal:  '('(   3,  25,  21)
+                       Terminal:  opt_formal_param(   2,  25,  25)
+                       Terminal:  ')'(   3,  25,  42)
                   Nonterminal:  14
-                       Terminal:  PARAM_DCL(   2,  31,  63)
+                       Terminal:  FORMAL_PARA(   2,  25,  63)
         Nonterminal:   8
-             Terminal:  compound_st(   2,  33,   1)
+             Terminal:  opt_formal_param(   2,  26,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '{'(   3,  33,  21)
-                       Terminal:  opt_dcl_list(   2,  33,  25)
-                       Terminal:  opt_stat_list(   2,  33,  38)
-                       Terminal:  '}'(   3,  33,  52)
-                  Nonterminal:  14
-                       Terminal:  COMPOUND_ST(   2,  33,  63)
-        Nonterminal:   8
-             Terminal:  opt_dcl_list(   2,  34,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  declaration_list(   2,  34,  21)
-                  Nonterminal:  14
-                       Terminal:  DCL_LIST(   2,  34,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                  Nonterminal:  14
-                       Terminal:  DCL_LIST(   2,  35,  63)
-        Nonterminal:   8
-             Terminal:  declaration_list(   2,  36,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  declaration(   2,  36,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  declaration_list(   2,  37,  21)
-                       Terminal:  declaration(   2,  37,  38)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  declaration(   2,  38,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  dcl_spec(   2,  38,  21)
-                       Terminal:  init_dcl_list(   2,  38,  30)
-                       Terminal:  ';'(   3,  38,  44)
-                  Nonterminal:  14
-                       Terminal:  DCL(   2,  38,  63)
-        Nonterminal:   8
-             Terminal:  init_dcl_list(   2,  39,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  init_declarator(   2,  39,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  init_dcl_list(   2,  40,  21)
-                       Terminal:  ','(   3,  40,  35)
-                       Terminal:  init_declarator(   2,  40,  39)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  init_declarator(   2,  41,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  declarator(   2,  41,  21)
-                  Nonterminal:  14
-                       Terminal:  DCL_ITEM(   2,  41,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  declarator(   2,  42,  21)
-                       Terminal:  '='(   3,  42,  32)
-                       Terminal:  '%number'(   3,  42,  36)
-                  Nonterminal:  14
-                       Terminal:  DCL_ITEM(   2,  42,  63)
-        Nonterminal:   8
-             Terminal:  declarator(   2,  43,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  '%ident'(   3,  43,  21)
-                  Nonterminal:  14
-                       Terminal:  SIMPLE_VAR(   2,  43,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  '%ident'(   3,  44,  21)
-                       Terminal:  '['(   3,  44,  30)
-                       Terminal:  opt_number(   2,  44,  34)
-                       Terminal:  ']'(   3,  44,  45)
-                  Nonterminal:  14
-                       Terminal:  ARRAY_VAR(   2,  44,  63)
-        Nonterminal:   8
-             Terminal:  opt_number(   2,  45,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  '%number'(   3,  45,  21)
+                       Terminal:  formal_param_list(   2,  26,  21)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  opt_stat_list(   2,  48,   1)
+             Terminal:  formal_param_list(   2,  28,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  statement_list(   2,  48,  21)
+                       Terminal:  param_dcl(   2,  28,  21)
                   Nonterminal:  14
-                       Terminal:  STAT_LIST(   2,  48,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  formal_param_list(   2,  29,  21)
+                       Terminal:  ','(   3,  29,  39)
+                       Terminal:  param_dcl(   2,  29,  43)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  param_dcl(   2,  30,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_spec(   2,  30,  21)
+                       Terminal:  declarator(   2,  30,  30)
+                  Nonterminal:  14
+                       Terminal:  PARAM_DCL(   2,  30,  63)
+        Nonterminal:   8
+             Terminal:  compound_st(   2,  31,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '{'(   3,  31,  21)
+                       Terminal:  opt_dcl_list(   2,  31,  25)
+                       Terminal:  opt_stat_list(   2,  31,  38)
+                       Terminal:  '}'(   3,  31,  52)
+                  Nonterminal:  14
+                       Terminal:  COMPOUND_ST(   2,  31,  63)
+        Nonterminal:   8
+             Terminal:  opt_dcl_list(   2,  32,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declaration_list(   2,  32,  21)
+                  Nonterminal:  14
+                       Terminal:  DCL_LIST(   2,  32,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+                       Terminal:  DCL_LIST(   2,  33,  63)
+        Nonterminal:   8
+             Terminal:  declaration_list(   2,  34,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declaration(   2,  34,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declaration_list(   2,  35,  21)
+                       Terminal:  declaration(   2,  35,  38)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  declaration(   2,  36,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  dcl_spec(   2,  36,  21)
+                       Terminal:  init_dcl_list(   2,  36,  30)
+                       Terminal:  ';'(   3,  36,  44)
+                  Nonterminal:  14
+                       Terminal:  DCL(   2,  36,  63)
+        Nonterminal:   8
+             Terminal:  init_dcl_list(   2,  37,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  init_declarator(   2,  37,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  init_dcl_list(   2,  38,  21)
+                       Terminal:  ','(   3,  38,  35)
+                       Terminal:  init_declarator(   2,  38,  39)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  init_declarator(   2,  39,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declarator(   2,  39,  21)
+                  Nonterminal:  14
+                       Terminal:  DCL_ITEM(   2,  39,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  declarator(   2,  40,  21)
+                       Terminal:  '='(   3,  40,  32)
+                       Terminal:  '%number'(   3,  40,  36)
+                  Nonterminal:  14
+                       Terminal:  DCL_ITEM(   2,  40,  63)
+        Nonterminal:   8
+             Terminal:  declarator(   2,  41,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%ident'(   3,  41,  21)
+                  Nonterminal:  14
+                       Terminal:  SIMPLE_VAR(   2,  41,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%ident'(   3,  42,  21)
+                       Terminal:  '['(   3,  42,  30)
+                       Terminal:  opt_number(   2,  42,  34)
+                       Terminal:  ']'(   3,  42,  45)
+                  Nonterminal:  14
+                       Terminal:  ARRAY_VAR(   2,  42,  63)
+        Nonterminal:   8
+             Terminal:  opt_number(   2,  43,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  '%number'(   3,  43,  21)
+                  Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  statement_list(   2,  50,   1)
+             Terminal:  opt_stat_list(   2,  46,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  statement(   2,  50,  21)
+                       Terminal:  statement_list(   2,  46,  21)
                   Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  statement_list(   2,  51,  21)
-                       Terminal:  statement(   2,  51,  36)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  statement(   2,  52,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  compound_st(   2,  52,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  expression_st(   2,  53,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  condition_st(   2,  54,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  loop_st(   2,  55,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  flow_st(   2,  56,  21)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  loop_st(   2,  57,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  for_st(   2,  57,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  while_st(   2,  58,  21)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  condition_st(   2,  59,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  if_st(   2,  59,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  switch_st(   2,  60,  21)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  flow_st(   2,  61,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  return_st(   2,  61,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  continue_st(   2,  62,  21)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  break_st(   2,  63,  21)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  expression_st(   2,  64,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  opt_expression(   2,  64,  21)
-                       Terminal:  ';'(   3,  64,  36)
-                  Nonterminal:  14
-                       Terminal:  EXP_ST(   2,  64,  63)
-        Nonterminal:   8
-             Terminal:  opt_expression(   2,  65,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  expression(   2,  65,  21)
-                  Nonterminal:  14
+                       Terminal:  STAT_LIST(   2,  46,  63)
              Nonterminal:  10
                   Nonterminal:  11
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  if_st(   2,  67,   1)
+             Terminal:  statement_list(   2,  48,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'if'(   3,  67,  21)
-                       Terminal:  '('(   3,  67,  26)
-                       Terminal:  expression(   2,  67,  30)
-                       Terminal:  ')'(   3,  67,  41)
-                       Terminal:  statement(   2,  67,  45)
+                       Terminal:  statement(   2,  48,  21)
                   Nonterminal:  14
-                       Terminal:  IF_ST(   2,  67,  63)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'if'(   3,  68,  21)
-                       Terminal:  '('(   3,  68,  26)
-                       Terminal:  expression(   2,  68,  30)
-                       Terminal:  ')'(   3,  68,  41)
-                       Terminal:  statement(   2,  68,  45)
-                       Terminal:  'else'(   3,  69,  21)
-                       Terminal:  statement(   2,  69,  28)
+                       Terminal:  statement_list(   2,  49,  21)
+                       Terminal:  statement(   2,  49,  36)
                   Nonterminal:  14
-                       Terminal:  IF_ELSE_ST(   2,  69,  63)
         Nonterminal:   8
-             Terminal:  while_st(   2,  70,   1)
+             Terminal:  statement(   2,  50,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'while'(   3,  70,  21)
-                       Terminal:  '('(   3,  70,  29)
-                       Terminal:  expression(   2,  70,  33)
-                       Terminal:  ')'(   3,  70,  44)
-                       Terminal:  statement(   2,  70,  48)
+                       Terminal:  compound_st(   2,  50,  21)
                   Nonterminal:  14
-                       Terminal:  WHILE_ST(   2,  70,  63)
-        Nonterminal:   8
-             Terminal:  return_st(   2,  71,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'return'(   3,  71,  21)
-                       Terminal:  opt_expression(   2,  71,  30)
-                       Terminal:  ';'(   3,  71,  45)
+                       Terminal:  expression_st(   2,  51,  21)
                   Nonterminal:  14
-                       Terminal:  RETURN_ST(   2,  71,  63)
-        Nonterminal:   8
-             Terminal:  continue_st(   2,  72,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'continue'(   3,  72,  21)
-                       Terminal:  ';'(   3,  72,  32)
+                       Terminal:  condition_st(   2,  52,  21)
                   Nonterminal:  14
-                       Terminal:  CONTINUE_ST(   2,  72,  63)
-        Nonterminal:   8
-             Terminal:  break_st(   2,  73,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'break'(   3,  73,  21)
-                       Terminal:  ';'(   3,  73,  29)
+                       Terminal:  loop_st(   2,  53,  21)
                   Nonterminal:  14
-                       Terminal:  BREAK_ST(   2,  73,  63)
-        Nonterminal:   8
-             Terminal:  for_st(   2,  74,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'for'(   3,  74,  21)
-                       Terminal:  '('(   3,  74,  27)
-                       Terminal:  for_dcl(   2,  74,  31)
-                       Terminal:  ';'(   3,  74,  39)
-                       Terminal:  for_exp(   2,  74,  43)
-                       Terminal:  ';'(   3,  74,  51)
-                       Terminal:  for_inc(   2,  74,  55)
-                       Terminal:  ')'(   3,  74,  63)
-                       Terminal:  statement(   2,  74,  67)
+                       Terminal:  flow_st(   2,  54,  21)
                   Nonterminal:  14
-                       Terminal:  FOR_ST(   2,  74,  80)
         Nonterminal:   8
-             Terminal:  for_dcl(   2,  75,   1)
+             Terminal:  loop_st(   2,  55,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  for_st(   2,  55,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  while_st(   2,  56,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  condition_st(   2,  57,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  if_st(   2,  57,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  switch_st(   2,  58,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  flow_st(   2,  59,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  return_st(   2,  59,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  continue_st(   2,  60,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  break_st(   2,  61,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  expression_st(   2,  62,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  opt_expression(   2,  62,  21)
+                       Terminal:  ';'(   3,  62,  36)
+                  Nonterminal:  14
+                       Terminal:  EXP_ST(   2,  62,  63)
+        Nonterminal:   8
+             Terminal:  opt_expression(   2,  63,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  expression(   2,  63,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  if_st(   2,  65,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'if'(   3,  65,  21)
+                       Terminal:  '('(   3,  65,  26)
+                       Terminal:  expression(   2,  65,  30)
+                       Terminal:  ')'(   3,  65,  41)
+                       Terminal:  statement(   2,  65,  45)
+                  Nonterminal:  14
+                       Terminal:  IF_ST(   2,  65,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'if'(   3,  66,  21)
+                       Terminal:  '('(   3,  66,  26)
+                       Terminal:  expression(   2,  66,  30)
+                       Terminal:  ')'(   3,  66,  41)
+                       Terminal:  statement(   2,  66,  45)
+                       Terminal:  'else'(   3,  67,  21)
+                       Terminal:  statement(   2,  67,  28)
+                  Nonterminal:  14
+                       Terminal:  IF_ELSE_ST(   2,  67,  63)
+        Nonterminal:   8
+             Terminal:  while_st(   2,  68,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'while'(   3,  68,  21)
+                       Terminal:  '('(   3,  68,  29)
+                       Terminal:  expression(   2,  68,  33)
+                       Terminal:  ')'(   3,  68,  44)
+                       Terminal:  statement(   2,  68,  48)
+                  Nonterminal:  14
+                       Terminal:  WHILE_ST(   2,  68,  63)
+        Nonterminal:   8
+             Terminal:  return_st(   2,  69,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'return'(   3,  69,  21)
+                       Terminal:  opt_expression(   2,  69,  30)
+                       Terminal:  ';'(   3,  69,  45)
+                  Nonterminal:  14
+                       Terminal:  RETURN_ST(   2,  69,  63)
+        Nonterminal:   8
+             Terminal:  continue_st(   2,  70,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'continue'(   3,  70,  21)
+                       Terminal:  ';'(   3,  70,  32)
+                  Nonterminal:  14
+                       Terminal:  CONTINUE_ST(   2,  70,  63)
+        Nonterminal:   8
+             Terminal:  break_st(   2,  71,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'break'(   3,  71,  21)
+                       Terminal:  ';'(   3,  71,  29)
+                  Nonterminal:  14
+                       Terminal:  BREAK_ST(   2,  71,  63)
+        Nonterminal:   8
+             Terminal:  for_st(   2,  72,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'for'(   3,  72,  21)
+                       Terminal:  '('(   3,  72,  27)
+                       Terminal:  for_dcl(   2,  72,  31)
+                       Terminal:  ';'(   3,  72,  39)
+                       Terminal:  for_exp(   2,  72,  43)
+                       Terminal:  ';'(   3,  72,  51)
+                       Terminal:  for_inc(   2,  72,  55)
+                       Terminal:  ')'(   3,  72,  63)
+                       Terminal:  statement(   2,  72,  67)
+                  Nonterminal:  14
+                       Terminal:  FOR_ST(   2,  72,  80)
+        Nonterminal:   8
+             Terminal:  for_dcl(   2,  73,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  for_dcl_list(   2,  73,  21)
+                  Nonterminal:  14
+                       Terminal:  FOR_DCL(   2,  73,  58)
+             Nonterminal:  10
+                  Nonterminal:  11
+                  Nonterminal:  14
+                       Terminal:  FOR_DCL(   2,  74,  58)
+        Nonterminal:   8
+             Terminal:  for_dcl_list(   2,  75,   1)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  for_dcl_list(   2,  75,  21)
-                  Nonterminal:  14
-                       Terminal:  FOR_DCL(   2,  75,  58)
-             Nonterminal:  10
-                  Nonterminal:  11
-                  Nonterminal:  14
-                       Terminal:  FOR_DCL(   2,  76,  58)
-        Nonterminal:   8
-             Terminal:  for_dcl_list(   2,  77,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  for_dcl_list(   2,  77,  21)
-                       Terminal:  ','(   3,  77,  34)
-                       Terminal:  init_declarator(   2,  77,  38)
+                       Terminal:  ','(   3,  75,  34)
+                       Terminal:  init_declarator(   2,  75,  38)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  init_declarator(   2,  78,  21)
+                       Terminal:  init_declarator(   2,  76,  21)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  for_exp(   2,  79,   1)
+             Terminal:  for_exp(   2,  77,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  logical_or_exp(   2,  79,  21)
+                       Terminal:  logical_or_exp(   2,  77,  21)
                   Nonterminal:  14
-                       Terminal:  FOR_EXP(   2,  79,  62)
+                       Terminal:  FOR_EXP(   2,  77,  62)
              Nonterminal:  10
                   Nonterminal:  11
                   Nonterminal:  14
-                       Terminal:  FOR_EXP(   2,  80,  61)
+                       Terminal:  FOR_EXP(   2,  78,  61)
         Nonterminal:   8
-             Terminal:  for_inc(   2,  81,   1)
+             Terminal:  for_inc(   2,  79,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  for_inc_list(   2,  81,  21)
+                       Terminal:  for_inc_list(   2,  79,  21)
                   Nonterminal:  14
-                       Terminal:  FOR_INC(   2,  81,  60)
+                       Terminal:  FOR_INC(   2,  79,  60)
              Nonterminal:  10
                   Nonterminal:  11
                   Nonterminal:  14
-                       Terminal:  FOR_INC(   2,  82,  59)
+                       Terminal:  FOR_INC(   2,  80,  59)
         Nonterminal:   8
-             Terminal:  for_inc_list(   2,  83,   1)
+             Terminal:  for_inc_list(   2,  81,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  assignment_exp(   2,  83,  21)
+                       Terminal:  assignment_exp(   2,  81,  21)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  for_inc_list(   2,  84,  21)
-                       Terminal:  ','(   3,  84,  34)
-                       Terminal:  assignment_exp(   2,  84,  38)
-                  Nonterminal:  14
-        Nonterminal:   8
-             Terminal:  switch_st(   2,  85,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  'switch'(   3,  85,  21)
-                       Terminal:  '('(   3,  85,  30)
-                       Terminal:  declarator(   2,  85,  34)
-                       Terminal:  ')'(   3,  85,  45)
-                       Terminal:  '{'(   3,  85,  49)
-                       Terminal:  switch_case_list(   2,  85,  53)
-                       Terminal:  '}'(   3,  85,  70)
-                  Nonterminal:  14
-                       Terminal:  SWITCH_ST(   2,  85,  77)
-        Nonterminal:   8
-             Terminal:  switch_case_list(   2,  86,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  switch_case_list(   2,  86,  21)
-                       Terminal:  switch_case(   2,  86,  38)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  switch_case(   2,  87,  21)
+                       Terminal:  for_inc_list(   2,  82,  21)
+                       Terminal:  ','(   3,  82,  34)
+                       Terminal:  assignment_exp(   2,  82,  38)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  switch_case(   2,  88,   1)
+             Terminal:  switch_st(   2,  83,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  'case'(   3,  88,  21)
-                       Terminal:  '%number'(   3,  88,  28)
-                       Terminal:  ':'(   3,  88,  38)
-                       Terminal:  statement_list(   2,  88,  42)
+                       Terminal:  'switch'(   3,  83,  21)
+                       Terminal:  '('(   3,  83,  30)
+                       Terminal:  declarator(   2,  83,  34)
+                       Terminal:  ')'(   3,  83,  45)
+                       Terminal:  '{'(   3,  83,  49)
+                       Terminal:  switch_case_list(   2,  83,  53)
+                       Terminal:  '}'(   3,  83,  70)
                   Nonterminal:  14
-                       Terminal:  CASE_ST(   2,  88,  64)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  'case'(   3,  89,  21)
-                       Terminal:  '%number'(   3,  89,  28)
-                  Nonterminal:  14
-                       Terminal:  CASE_ST(   2,  89,  64)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  'default'(   3,  90,  21)
-                       Terminal:  ':'(   3,  90,  31)
-                       Terminal:  statement_list(   2,  90,  35)
-                  Nonterminal:  14
-                       Terminal:  DEFAULT_ST(   2,  90,  64)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  'default'(   3,  91,  21)
-                       Terminal:  ':'(   3,  91,  31)
-                  Nonterminal:  14
-                       Terminal:  DEFAULT_ST(   2,  91,  64)
+                       Terminal:  SWITCH_ST(   2,  83,  77)
         Nonterminal:   8
-             Terminal:  expression(   2,  92,   1)
+             Terminal:  switch_case_list(   2,  84,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  assignment_exp(   2,  92,  21)
+                       Terminal:  switch_case_list(   2,  84,  21)
+                       Terminal:  switch_case(   2,  84,  38)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  switch_case(   2,  85,  21)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  assignment_exp(   2,  93,   1)
+             Terminal:  switch_case(   2,  86,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  logical_or_exp(   2,  93,  21)
+                       Terminal:  'case'(   3,  86,  21)
+                       Terminal:  '%number'(   3,  86,  28)
+                       Terminal:  ':'(   3,  86,  38)
+                       Terminal:  statement_list(   2,  86,  42)
                   Nonterminal:  14
+                       Terminal:  CASE_ST(   2,  86,  64)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'case'(   3,  87,  21)
+                       Terminal:  '%number'(   3,  87,  28)
+                       Terminal:  ':'(   3,  87,  38)
+                  Nonterminal:  14
+                       Terminal:  CASE_ST(   2,  87,  64)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'default'(   3,  88,  21)
+                       Terminal:  ':'(   3,  88,  31)
+                       Terminal:  statement_list(   2,  88,  35)
+                  Nonterminal:  14
+                       Terminal:  DEFAULT_ST(   2,  88,  64)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  'default'(   3,  89,  21)
+                       Terminal:  ':'(   3,  89,  31)
+                  Nonterminal:  14
+                       Terminal:  DEFAULT_ST(   2,  89,  64)
+        Nonterminal:   8
+             Terminal:  expression(   2,  90,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  assignment_exp(   2,  90,  21)
+                  Nonterminal:  14
+        Nonterminal:   8
+             Terminal:  assignment_exp(   2,  91,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  logical_or_exp(   2,  91,  21)
+                  Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  92,  21)
+                       Terminal:  '='(   3,  92,  31)
+                       Terminal:  assignment_exp(   2,  92,  35)
+                  Nonterminal:  14
+                       Terminal:  ASSIGN_OP(   2,  92,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  unary_exp(   2,  93,  21)
+                       Terminal:  '+='(   3,  93,  31)
+                       Terminal:  assignment_exp(   2,  93,  36)
+                  Nonterminal:  14
+                       Terminal:  ADD_ASSIGN(   2,  93,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  unary_exp(   2,  94,  21)
-                       Terminal:  '='(   3,  94,  31)
-                       Terminal:  assignment_exp(   2,  94,  35)
+                       Terminal:  '-='(   3,  94,  31)
+                       Terminal:  assignment_exp(   2,  94,  36)
                   Nonterminal:  14
-                       Terminal:  ASSIGN_OP(   2,  94,  63)
+                       Terminal:  SUB_ASSIGN(   2,  94,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  unary_exp(   2,  95,  21)
-                       Terminal:  '+='(   3,  95,  31)
+                       Terminal:  '*='(   3,  95,  31)
                        Terminal:  assignment_exp(   2,  95,  36)
                   Nonterminal:  14
-                       Terminal:  ADD_ASSIGN(   2,  95,  63)
+                       Terminal:  MUL_ASSIGN(   2,  95,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  unary_exp(   2,  96,  21)
-                       Terminal:  '-='(   3,  96,  31)
+                       Terminal:  '/='(   3,  96,  31)
                        Terminal:  assignment_exp(   2,  96,  36)
                   Nonterminal:  14
-                       Terminal:  SUB_ASSIGN(   2,  96,  63)
+                       Terminal:  DIV_ASSIGN(   2,  96,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  unary_exp(   2,  97,  21)
-                       Terminal:  '*='(   3,  97,  31)
+                       Terminal:  '%='(   3,  97,  31)
                        Terminal:  assignment_exp(   2,  97,  36)
                   Nonterminal:  14
-                       Terminal:  MUL_ASSIGN(   2,  97,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  unary_exp(   2,  98,  21)
-                       Terminal:  '/='(   3,  98,  31)
-                       Terminal:  assignment_exp(   2,  98,  36)
-                  Nonterminal:  14
-                       Terminal:  DIV_ASSIGN(   2,  98,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  unary_exp(   2,  99,  21)
-                       Terminal:  '%='(   3,  99,  31)
-                       Terminal:  assignment_exp(   2,  99,  36)
-                  Nonterminal:  14
-                       Terminal:  MOD_ASSIGN(   2,  99,  63)
+                       Terminal:  MOD_ASSIGN(   2,  97,  63)
         Nonterminal:   8
-             Terminal:  logical_or_exp(   2, 100,   1)
+             Terminal:  logical_or_exp(   2,  98,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  logical_and_exp(   2, 100,  21)
+                       Terminal:  logical_and_exp(   2,  98,  21)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  logical_or_exp(   2, 101,  21)
-                       Terminal:  '||'(   3, 101,  36)
-                       Terminal:  logical_and_exp(   2, 101,  41)
+                       Terminal:  logical_or_exp(   2,  99,  21)
+                       Terminal:  '||'(   3,  99,  36)
+                       Terminal:  logical_and_exp(   2,  99,  41)
                   Nonterminal:  14
-                       Terminal:  LOGICAL_OR(   2, 101,  63)
+                       Terminal:  LOGICAL_OR(   2,  99,  63)
         Nonterminal:   8
-             Terminal:  logical_and_exp(   2, 102,   1)
+             Terminal:  logical_and_exp(   2, 100,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  equality_exp(   2, 102,  21)
+                       Terminal:  equality_exp(   2, 100,  21)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  logical_and_exp(   2, 103,  21)
-                       Terminal:  '&&'(   3, 103,  37)
-                       Terminal:  equality_exp(   2, 103,  42)
+                       Terminal:  logical_and_exp(   2, 101,  21)
+                       Terminal:  '&&'(   3, 101,  37)
+                       Terminal:  equality_exp(   2, 101,  42)
                   Nonterminal:  14
-                       Terminal:  LOGICAL_AND(   2, 103,  63)
+                       Terminal:  LOGICAL_AND(   2, 101,  63)
         Nonterminal:   8
-             Terminal:  equality_exp(   2, 104,   1)
+             Terminal:  equality_exp(   2, 102,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  relational_exp(   2, 104,  21)
+                       Terminal:  relational_exp(   2, 102,  21)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  equality_exp(   2, 105,  21)
-                       Terminal:  '=='(   3, 105,  34)
-                       Terminal:  relational_exp(   2, 105,  39)
+                       Terminal:  equality_exp(   2, 103,  21)
+                       Terminal:  '=='(   3, 103,  34)
+                       Terminal:  relational_exp(   2, 103,  39)
                   Nonterminal:  14
-                       Terminal:  EQ(   2, 105,  63)
+                       Terminal:  EQ(   2, 103,  63)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  equality_exp(   2, 106,  21)
-                       Terminal:  '!='(   3, 106,  34)
-                       Terminal:  relational_exp(   2, 106,  39)
+                       Terminal:  equality_exp(   2, 104,  21)
+                       Terminal:  '!='(   3, 104,  34)
+                       Terminal:  relational_exp(   2, 104,  39)
                   Nonterminal:  14
-                       Terminal:  NE(   2, 106,  63)
+                       Terminal:  NE(   2, 104,  63)
         Nonterminal:   8
-             Terminal:  relational_exp(   2, 107,   1)
+             Terminal:  relational_exp(   2, 105,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  additive_exp(   2, 107,  21)
+                       Terminal:  additive_exp(   2, 105,  21)
                   Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  relational_exp(   2, 106,  21)
+                       Terminal:  '>'(   3, 106,  36)
+                       Terminal:  additive_exp(   2, 106,  40)
+                  Nonterminal:  14
+                       Terminal:  GT(   2, 106,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  relational_exp(   2, 107,  21)
+                       Terminal:  '<'(   3, 107,  36)
+                       Terminal:  additive_exp(   2, 107,  40)
+                  Nonterminal:  14
+                       Terminal:  LT(   2, 107,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  relational_exp(   2, 108,  21)
-                       Terminal:  '>'(   3, 108,  36)
-                       Terminal:  additive_exp(   2, 108,  40)
+                       Terminal:  '>='(   3, 108,  36)
+                       Terminal:  additive_exp(   2, 108,  41)
                   Nonterminal:  14
-                       Terminal:  GT(   2, 108,  63)
+                       Terminal:  GE(   2, 108,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  relational_exp(   2, 109,  21)
-                       Terminal:  '<'(   3, 109,  36)
-                       Terminal:  additive_exp(   2, 109,  40)
+                       Terminal:  '<='(   3, 109,  36)
+                       Terminal:  additive_exp(   2, 109,  41)
                   Nonterminal:  14
-                       Terminal:  LT(   2, 109,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  relational_exp(   2, 110,  21)
-                       Terminal:  '>='(   3, 110,  36)
-                       Terminal:  additive_exp(   2, 110,  41)
-                  Nonterminal:  14
-                       Terminal:  GE(   2, 110,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  relational_exp(   2, 111,  21)
-                       Terminal:  '<='(   3, 111,  36)
-                       Terminal:  additive_exp(   2, 111,  41)
-                  Nonterminal:  14
-                       Terminal:  LE(   2, 111,  63)
+                       Terminal:  LE(   2, 109,  63)
         Nonterminal:   8
-             Terminal:  additive_exp(   2, 112,   1)
+             Terminal:  additive_exp(   2, 110,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  multiplicative_exp(   2, 112,  21)
+                       Terminal:  multiplicative_exp(   2, 110,  21)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  additive_exp(   2, 113,  21)
-                       Terminal:  '+'(   3, 113,  34)
-                       Terminal:  multiplicative_exp(   2, 113,  38)
+                       Terminal:  additive_exp(   2, 111,  21)
+                       Terminal:  '+'(   3, 111,  34)
+                       Terminal:  multiplicative_exp(   2, 111,  38)
                   Nonterminal:  14
-                       Terminal:  ADD(   2, 113,  63)
+                       Terminal:  ADD(   2, 111,  63)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  additive_exp(   2, 114,  21)
-                       Terminal:  '-'(   3, 114,  34)
-                       Terminal:  multiplicative_exp(   2, 114,  38)
+                       Terminal:  additive_exp(   2, 112,  21)
+                       Terminal:  '-'(   3, 112,  34)
+                       Terminal:  multiplicative_exp(   2, 112,  38)
                   Nonterminal:  14
-                       Terminal:  SUB(   2, 114,  63)
+                       Terminal:  SUB(   2, 112,  63)
         Nonterminal:   8
-             Terminal:  multiplicative_exp(   2, 115,   1)
+             Terminal:  multiplicative_exp(   2, 113,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  unary_exp(   2, 115,  23)
+                       Terminal:  unary_exp(   2, 113,  23)
                   Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  multiplicative_exp(   2, 114,  23)
+                       Terminal:  '*'(   3, 114,  42)
+                       Terminal:  unary_exp(   2, 114,  46)
+                  Nonterminal:  14
+                       Terminal:  MUL(   2, 114,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  multiplicative_exp(   2, 115,  23)
+                       Terminal:  '/'(   3, 115,  42)
+                       Terminal:  unary_exp(   2, 115,  46)
+                  Nonterminal:  14
+                       Terminal:  DIV(   2, 115,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  multiplicative_exp(   2, 116,  23)
-                       Terminal:  '*'(   3, 116,  42)
+                       Terminal:  '%'(   3, 116,  42)
                        Terminal:  unary_exp(   2, 116,  46)
                   Nonterminal:  14
-                       Terminal:  MUL(   2, 116,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  multiplicative_exp(   2, 117,  23)
-                       Terminal:  '/'(   3, 117,  42)
-                       Terminal:  unary_exp(   2, 117,  46)
-                  Nonterminal:  14
-                       Terminal:  DIV(   2, 117,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  multiplicative_exp(   2, 118,  23)
-                       Terminal:  '%'(   3, 118,  42)
-                       Terminal:  unary_exp(   2, 118,  46)
-                  Nonterminal:  14
-                       Terminal:  REMAINDER(   2, 118,  63)
+                       Terminal:  REMAINDER(   2, 116,  63)
         Nonterminal:   8
-             Terminal:  unary_exp(   2, 119,   1)
+             Terminal:  unary_exp(   2, 117,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  postfix_exp(   2, 119,  23)
+                       Terminal:  postfix_exp(   2, 117,  23)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '-'(   3, 120,  23)
-                       Terminal:  unary_exp(   2, 120,  27)
+                       Terminal:  '-'(   3, 118,  23)
+                       Terminal:  unary_exp(   2, 118,  27)
                   Nonterminal:  14
-                       Terminal:  UNARY_MINUS(   2, 120,  63)
+                       Terminal:  UNARY_MINUS(   2, 118,  63)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '!'(   3, 121,  23)
-                       Terminal:  unary_exp(   2, 121,  27)
+                       Terminal:  '!'(   3, 119,  23)
+                       Terminal:  unary_exp(   2, 119,  27)
                   Nonterminal:  14
-                       Terminal:  LOGICAL_NOT(   2, 121,  63)
+                       Terminal:  LOGICAL_NOT(   2, 119,  63)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '++'(   3, 122,  23)
-                       Terminal:  unary_exp(   2, 122,  28)
+                       Terminal:  '++'(   3, 120,  23)
+                       Terminal:  unary_exp(   2, 120,  28)
                   Nonterminal:  14
-                       Terminal:  PRE_INC(   2, 122,  63)
+                       Terminal:  PRE_INC(   2, 120,  63)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '--'(   3, 123,  23)
-                       Terminal:  unary_exp(   2, 123,  28)
+                       Terminal:  '--'(   3, 121,  23)
+                       Terminal:  unary_exp(   2, 121,  28)
                   Nonterminal:  14
-                       Terminal:  PRE_DEC(   2, 123,  63)
+                       Terminal:  PRE_DEC(   2, 121,  63)
         Nonterminal:   8
-             Terminal:  postfix_exp(   2, 124,   1)
+             Terminal:  postfix_exp(   2, 122,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  primary_exp(   2, 124,  23)
+                       Terminal:  primary_exp(   2, 122,  23)
                   Nonterminal:  14
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  postfix_exp(   2, 123,  23)
+                       Terminal:  '['(   3, 123,  35)
+                       Terminal:  expression(   2, 123,  39)
+                       Terminal:  ']'(   3, 123,  50)
+                  Nonterminal:  14
+                       Terminal:  INDEX(   2, 123,  63)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  postfix_exp(   2, 124,  23)
+                       Terminal:  '('(   3, 124,  35)
+                       Terminal:  opt_actual_param(   2, 124,  39)
+                       Terminal:  ')'(   3, 124,  56)
+                  Nonterminal:  14
+                       Terminal:  CALL(   2, 124,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  postfix_exp(   2, 125,  23)
-                       Terminal:  '['(   3, 125,  35)
-                       Terminal:  expression(   2, 125,  39)
-                       Terminal:  ']'(   3, 125,  50)
+                       Terminal:  '++'(   3, 125,  35)
                   Nonterminal:  14
-                       Terminal:  INDEX(   2, 125,  63)
+                       Terminal:  POST_INC(   2, 125,  63)
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  postfix_exp(   2, 126,  23)
-                       Terminal:  '('(   3, 126,  35)
-                       Terminal:  opt_actual_param(   2, 126,  39)
-                       Terminal:  ')'(   3, 126,  56)
+                       Terminal:  '--'(   3, 126,  35)
                   Nonterminal:  14
-                       Terminal:  CALL(   2, 126,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  postfix_exp(   2, 127,  23)
-                       Terminal:  '++'(   3, 127,  35)
-                  Nonterminal:  14
-                       Terminal:  POST_INC(   2, 127,  63)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  postfix_exp(   2, 128,  23)
-                       Terminal:  '--'(   3, 128,  35)
-                  Nonterminal:  14
-                       Terminal:  POST_DEC(   2, 128,  63)
+                       Terminal:  POST_DEC(   2, 126,  63)
         Nonterminal:   8
-             Terminal:  opt_actual_param(   2, 129,   1)
+             Terminal:  opt_actual_param(   2, 127,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  actual_param(   2, 129,  23)
+                       Terminal:  actual_param(   2, 127,  23)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  actual_param(   2, 131,   1)
+             Terminal:  actual_param(   2, 129,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  actual_param_list(   2, 129,  23)
+                  Nonterminal:  14
+                       Terminal:  ACTUAL_PARAM(   2, 129,  63)
+        Nonterminal:   8
+             Terminal:  actual_param_list(   2, 130,   1)
+             Nonterminal:  10
+                  Nonterminal:  11
+                       Terminal:  assignment_exp(   2, 130,  23)
+                  Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
                        Terminal:  actual_param_list(   2, 131,  23)
-                  Nonterminal:  14
-                       Terminal:  ACTUAL_PARAM(   2, 131,  63)
-        Nonterminal:   8
-             Terminal:  actual_param_list(   2, 132,   1)
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  assignment_exp(   2, 132,  23)
-                  Nonterminal:  14
-             Nonterminal:  10
-                  Nonterminal:  11
-                       Terminal:  actual_param_list(   2, 133,  23)
-                       Terminal:  ','(   3, 133,  41)
-                       Terminal:  assignment_exp(   2, 133,  45)
+                       Terminal:  ','(   3, 131,  41)
+                       Terminal:  assignment_exp(   2, 131,  45)
                   Nonterminal:  14
         Nonterminal:   8
-             Terminal:  primary_exp(   2, 134,   1)
+             Terminal:  primary_exp(   2, 132,   1)
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '%ident'(   3, 134,  23)
+                       Terminal:  '%ident'(   3, 132,  23)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '%number'(   3, 135,  23)
+                       Terminal:  '%number'(   3, 133,  23)
                   Nonterminal:  14
              Nonterminal:  10
                   Nonterminal:  11
-                       Terminal:  '('(   3, 136,  23)
-                       Terminal:  expression(   2, 136,  27)
-                       Terminal:  ')'(   3, 136,  38)
+                       Terminal:  '('(   3, 134,  23)
+                       Terminal:  expression(   2, 134,  27)
+                       Terminal:  ')'(   3, 134,  38)
                   Nonterminal:  14
 
  ******** TERMINAL    SYMBOL ********
@@ -1127,7 +1126,7 @@
   ->  switch_case ;
  switch_case                                   -- RULE NUMBER: 76
   ->  'case'  '%number'  ':'  statement_list                      =>  CASE_ST;
-  ->  'case'  '%number'                                           =>  CASE_ST;
+  ->  'case'  '%number'  ':'                                      =>  CASE_ST;
   ->  'default'  ':'  statement_list                              =>  DEFAULT_ST;
   ->  'default'  ':'                                              =>  DEFAULT_ST;
  expression                                    -- RULE NUMBER: 80
@@ -1214,7 +1213,7 @@
  '-='                 84 
  '/'                 105 
  '/='                 86 
- ':'                  79   78   76 
+ ':'                  79   78   77   76 
  ';'                  59   62   62   53   28   60   61 
  '<'                  97 
  '<='                 99 
@@ -4470,7 +4469,7 @@
  switch_case_list ->  .  switch_case_list switch_case
  switch_case_list ->  .  switch_case
  switch_case ->  .  'case' '%number' ':' statement_list
- switch_case ->  .  'case' '%number'
+ switch_case ->  .  'case' '%number' ':'
  switch_case ->  .  'default' ':' statement_list
  switch_case ->  .  'default' ':'
 
@@ -4524,7 +4523,7 @@
  switch_st ->  'switch' '(' declarator ')' '{' switch_case_list .  '}'
  switch_case_list ->  switch_case_list .  switch_case
  switch_case ->  .  'case' '%number' ':' statement_list
- switch_case ->  .  'case' '%number'
+ switch_case ->  .  'case' '%number' ':'
  switch_case ->  .  'default' ':' statement_list
  switch_case ->  .  'default' ':'
 
@@ -4549,7 +4548,7 @@
  *** KERNEL : 180
  ACCESS SYMBOL :  'case'
  switch_case ->  'case' .  '%number' ':' statement_list
- switch_case ->  'case' .  '%number'
+ switch_case ->  'case' .  '%number' ':'
 
  SHIFT 186  '%number'
 
@@ -4862,9 +4861,8 @@
  *** KERNEL : 186
  ACCESS SYMBOL :  '%number'
  switch_case ->  'case' '%number' .  ':' statement_list
- switch_case ->  'case' '%number' . 
+ switch_case ->  'case' '%number' .  ':'
 
- REDUCE  77  '}' 'default' 'case'
  SHIFT 192  ':'
 
  *** KERNEL : 187
@@ -5009,6 +5007,7 @@
  *** KERNEL : 192
  ACCESS SYMBOL :  ':'
  switch_case ->  'case' '%number' ':' .  statement_list
+ switch_case ->  'case' '%number' ':' . 
  statement_list ->  .  statement
  statement_list ->  .  statement_list statement
  statement ->  .  compound_st
@@ -5077,6 +5076,7 @@
  multiplicative_exp ->  .  multiplicative_exp '%' unary_exp
 
  REDUCE  55  ';'
+ REDUCE  77  '}' 'default' 'case'
  SHIFT  75  '!'
  SHIFT  74  '%ident'
  SHIFT  73  '%number'
