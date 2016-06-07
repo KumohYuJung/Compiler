@@ -140,7 +140,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "minic_ast.h"
-
+#include "ucode_gen.h"
 extern FILE *yyin;
 
 int yylex(void);
@@ -2639,7 +2639,7 @@ void parse(FILE *cFile)
 	}while(!feof(yyin));
 }
 int main(int argc, char *argv[]){
-	FILE *cFile, *astFile;
+	FILE *cFile, *astFile, *ucoFile;
 	char fileName[256];
 	if(argc != 2){
 		fprintf(stderr, "arguments not valid.");
@@ -2648,8 +2648,16 @@ int main(int argc, char *argv[]){
 	strcpy(fileName, argv[1]);
 	cFile = fopen(fileName, "r");
 	astFile = fopen(strcat(strtok(fileName,"."),".ast"),"w");
+	ucoFile = fopen(strcat(strtok(fileName,"."),".uco"),"w");	
+
 	parse(cFile);
 	printTree(root,0,astFile);
+	
+	codeGen(root, ucoFile);
+
+	fclose(cFile);
+	fclose(astFile);
+	fclose(ucoFile);
 	return 0;
 }
 
