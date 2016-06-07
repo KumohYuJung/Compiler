@@ -26,6 +26,13 @@
                           Nontermianl: DCL_ITEM
                                Nontermianl: SIMPLE_VAR
                                     Terminal: c
+                     Nontermianl: DCL
+                          Nontermianl: DCL_SPEC
+                               Nontermianl: INT_TYPE
+                          Nontermianl: DCL_ITEM
+                               Nontermianl: ARRAY_VAR
+                                    Terminal: array
+                                    Terminal: 10
                 Nontermianl: STAT_LIST
                      Nontermianl: EXP_ST
                           Nontermianl: ASSIGN_OP
@@ -36,4 +43,43 @@
                                Terminal: write
                                Nontermianl: ACTUAL_PARAM
                                     Terminal: c
+                     Nontermianl: EXP_ST
+                          Nontermianl: CALL
+                               Terminal: read
+                               Nontermianl: ACTUAL_PARAM
+                                    Terminal: c
+                     Nontermianl: EXP_ST
+                          Nontermianl: CALL
+                               Terminal: lf
+                     Nontermianl: EXP_ST
+                          Nontermianl: CALL
+                               Terminal: test
+                               Nontermianl: ACTUAL_PARAM
+                                    Terminal: 3
+                                    Terminal: c
                      Nontermianl: RETURN_ST
+      Nontermianl: FUNC_DEF
+           Nontermianl: FUNC_HEAD
+                Nontermianl: DCL_SPEC
+                     Nontermianl: INT_TYPE
+                Terminal: test
+                Nontermianl: FORMAL_PARA
+                     Nontermianl: PARAM_DCL
+                          Nontermianl: DCL_SPEC
+                               Nontermianl: INT_TYPE
+                          Nontermianl: DCL_ITEM
+                               Nontermianl: SIMPLE_VAR
+                                    Terminal: a
+                     Nontermianl: PARAM_DCL
+                          Nontermianl: DCL_SPEC
+                               Nontermianl: INT_TYPE
+                          Nontermianl: DCL_ITEM
+                               Nontermianl: SIMPLE_VAR
+                                    Terminal: b
+           Nontermianl: COMPOUND_ST
+                Nontermianl: DCL_LIST
+                Nontermianl: STAT_LIST
+                     Nontermianl: RETURN_ST
+                          Nontermianl: ADD
+                               Terminal: a
+                               Terminal: b

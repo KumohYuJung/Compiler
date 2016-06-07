@@ -24,34 +24,36 @@ SymbolTable* initSymbolTable()
 {
 	return makeSymbolTable(NULL, 1);
 }
-void lookupSymbol(char *findId, SymbolTable* foundTable, int* findIdx)
+void lookupSymbol(char *findId, SymbolTable** foundTable, int* findIdx)
 {
-	if(foundTable == NULL) 
+	if((*foundTable) == NULL) 
 	{ // Global Table까지 검색해보고 존재하지 않으면 -1을 리턴
 		*findIdx = -1;
 		return;
 	}
 
 	int i;
-	for(i = 0; i < foundTable->count; i++)
+	for(i = 0; i < (*foundTable)->count; i++)
 	{
-		if(strcmp(foundTable->symbols[i].id, findId) == 0)
+		if(strcmp((*foundTable)->symbols[i].id, findId) == 0)
 		{
 			*findIdx = i; 
 			return;
 		}
 	}
-	foundTable = foundTable->parent;
+	(*foundTable) = (*foundTable)->parent;
 	lookupSymbol(findId,foundTable, findIdx); //찾지 못하면 상위테이블에서 찾아본다. 
 }
 int insertSymbol(SymbolTable *table, Qualifier qual, Specifier spec, char *id, int width, int initialValue)
 {
 	int symIdx;
 	SymbolTable *findTable = table;
-	lookupSymbol(id,findTable,&symIdx);
+	lookupSymbol(id,&findTable,&symIdx);
 	
-	if (findTable == table && symIdx != -1)
+	if (findTable == table && symIdx != -1){
+		fprintf(file,"returned\n");
 		return symIdx;
+	}
 
 	int top = table->count;
 	table->symbols[top].id = id;
@@ -62,8 +64,10 @@ int insertSymbol(SymbolTable *table, Qualifier qual, Specifier spec, char *id, i
 	table->symbols[top].initialValue = initialValue;
 	table->count++;
 	if(qual != FUNC_QUAL && qual != CONST_QUAL)
+	{
 		table->offset += width;
-
+		//fprintf(file,"insertSymbol: table->offset : %d \n", table->offset);
+	}
 	return -1;
 }
 
@@ -113,7 +117,7 @@ void rv_emit(SymbolTable *table, Node *ptr)
 	}
 	else
 	{
-		lookupSymbol(ptr->token.value, stTable, &stIndex);
+		lookupSymbol(ptr->token.value, &stTable, &stIndex);
 		if(stIndex == -1)
 			return;
 		
@@ -122,9 +126,9 @@ void rv_emit(SymbolTable *table, Node *ptr)
 		if( found->qual == CONST_QUAL )
 			emit1("ldc", found->initialValue);
 		else if( found->width > 1 )
-			emit2("lda", stTable->base, stTable->offset);
+			emit2("lda", stTable->base, stTable->symbols[stIndex].offset);
 		else
-			emit2("lod", stTable->base, stTable->offset);
+			emit2("lod", stTable->base, stTable->symbols[stIndex].offset);
 	}
 }
 void processSimpleVariable(SymbolTable *table, Node *ptr, 
@@ -156,6 +160,7 @@ void processSimpleVariable(SymbolTable *table, Node *ptr,
 	}
 	else
 	{
+		//fprintf(file,"wow~ declare~ %p\n",table);
 		insertSymbol(table, qual, spec, p->token.value, 1, 0);
 		//table->offset++;
 	}
@@ -279,7 +284,10 @@ void processFunction(SymbolTable *table, Node *ptr)
 	{
 		for(p = ptr->son->son->brother->brother->son; p; p = p->brother){
 			if(p->token.number == PARAM_DCL)
+			{
+				//fprintf(file,"%s : declared\n",p->son->brother->son->son->token.value);
 				processDeclaration(newTable, p->son);
+			}
 			else
 			{
 				fprintf(file,"error! in processfunction\n");
@@ -342,7 +350,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 			if(lhs->noderep == TERMINAL)
 			{
 				SymbolTable * stTable = table;
-				lookupSymbol(lhs->token.value, stTable, &stIndex);
+				lookupSymbol(lhs->token.value, &stTable, &stIndex);
 				if(stIndex == -1){
 					fprintf(stderr, "undefined variable: %s\n", lhs->token.value);
 					return;
@@ -391,7 +399,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 			if(lhs->noderep == TERMINAL)
 			{
 				SymbolTable * findTable = table;
-				lookupSymbol(lhs->token.value, findTable, &stIndex);
+				lookupSymbol(lhs->token.value, &findTable, &stIndex);
 				if(stIndex == -1)
 				{
 					fprintf(file,"undefined variable: %s\n", lhs->token.value);
@@ -462,7 +470,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 			else
 				rv_emit(table,indexExp);
 			SymbolTable * findTable = table;
-			lookupSymbol(ptr->son->token.value, findTable, &stIndex);
+			lookupSymbol(ptr->son->token.value, &findTable, &stIndex);
 			if(stIndex == -1)
 			{
 				fprintf(file, "undefined variable: %s\n", ptr->son->token.value);
@@ -494,7 +502,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 				fprintf(file,"increment/decrement operators error\n");
 				return;
 			}
-			lookupSymbol(q->token.value, findTable, &stIndex);
+			lookupSymbol(q->token.value, &findTable, &stIndex);
 			if(stIndex == -1)
 				return;
 
@@ -509,7 +517,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 			if(p->noderep == TERMINAL)
 			{
 				findTable = table;
-				lookupSymbol(p->token.value, findTable, &stIndex);
+				lookupSymbol(p->token.value, &findTable, &stIndex);
 				if(stIndex == -1)
 					return;
 
@@ -536,15 +544,17 @@ void processOperator(SymbolTable *table, Node *ptr)
 				break;
 			}
 			functionName = p->token.value;
+			
+			/*
 			lookupSymbol(functionName, findTable, &stIndex);
-
+			
 			if(stIndex == -1)
 			{
 				fprintf(file, "%s: undefined function\n",functionName);
 				break;
 			}
 			noArguments = findTable->symbols[stIndex].width;
-
+			*/
 			emit0("ldp");
 			p = p->brother->son;
 			while(p)
@@ -554,15 +564,15 @@ void processOperator(SymbolTable *table, Node *ptr)
 				else
 					rv_emit(table, p);
 
-				noArguments --;
+			//	noArguments --;
 				p = p->brother;
 			}
 
-			if(noArguments > 0)
-				fprintf(file, "%s: too few actual arguments\n", functionName);
+			//if(noArguments > 0)
+		//		fprintf(file, "%s: too few actual arguments\n", functionName);
 			
-			if(noArguments < 0)
-				fprintf(file, "%s: too many actual arguments\n", functionName);
+			//if(noArguments < 0)
+		//		fprintf(file, "%s: too many actual arguments\n", functionName);
 
 			emitJump("call", ptr->son->token.value);
 			break;
@@ -677,7 +687,7 @@ int checkPredefined(SymbolTable *table, Node *ptr)
 			else
 			{
 				findTable = table;
-				lookupSymbol(p->token.value, findTable, &stIndex);
+				lookupSymbol(p->token.value, &findTable, &stIndex);
 				if(stIndex == -1)
 					return 0;
 				emit2("lda", findTable->base, findTable->symbols[stIndex].offset);
@@ -706,7 +716,7 @@ int checkPredefined(SymbolTable *table, Node *ptr)
 			else
 			{
 				findTable = table;
-				lookupSymbol(p->token.value, findTable, &stIndex);
+				lookupSymbol(p->token.value, &findTable, &stIndex);
 				if(stIndex == -1)
 					return 0;
 				emit2("lod", findTable->base, findTable->symbols[stIndex].offset);
@@ -759,10 +769,7 @@ void codeGen(Node *root, FILE *ucoFile)
 	for( p = root->son; p; p = p->brother )
 	{
 		if(p->token.number == FUNC_DEF)
-		{
 			processFunction(globalTable,p);
-			break;
-		}
 	}
 
 	emit1("bgn", globalTable->offset - 1);
