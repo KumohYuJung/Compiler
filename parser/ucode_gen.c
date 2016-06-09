@@ -242,8 +242,8 @@ void processDeclaration(SymbolTable *table, Node *ptr)
 		p = p->brother;
 	}
 }
-void processFunction(SymbolTable *table, Node *ptr) 
-{ 
+void processFuncHeader(SymbolTable *table, Node *ptr)
+{
 	Specifier returnType;
 	int noArguments;
 	Node *p;
@@ -278,6 +278,13 @@ void processFunction(SymbolTable *table, Node *ptr)
 	}
 	insertSymbol(table, FUNC_QUAL, returnType, ptr->son->son->brother->token.value,noArguments,0);
 	
+
+}
+void processFunction(SymbolTable *table, Node *ptr) 
+{ 
+	Node *p;
+	int i;
+
 	SymbolTable * newTable = makeSymbolTable(table, table->base+1);
 	//parameter 처리
 	if(ptr->son->son->brother->brother->son)
@@ -545,8 +552,8 @@ void processOperator(SymbolTable *table, Node *ptr)
 			}
 			functionName = p->token.value;
 			
-			/*
-			lookupSymbol(functionName, findTable, &stIndex);
+			
+			lookupSymbol(functionName, &findTable, &stIndex);
 			
 			if(stIndex == -1)
 			{
@@ -554,7 +561,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 				break;
 			}
 			noArguments = findTable->symbols[stIndex].width;
-			*/
+			
 			emit0("ldp");
 			p = p->brother->son;
 			while(p)
@@ -564,15 +571,15 @@ void processOperator(SymbolTable *table, Node *ptr)
 				else
 					rv_emit(table, p);
 
-			//	noArguments --;
+				noArguments --;
 				p = p->brother;
 			}
 
-			//if(noArguments > 0)
-		//		fprintf(file, "%s: too few actual arguments\n", functionName);
+			if(noArguments > 0)
+				fprintf(file, "%s: too few actual arguments\n", functionName);
 			
-			//if(noArguments < 0)
-		//		fprintf(file, "%s: too many actual arguments\n", functionName);
+			if(noArguments < 0)
+				fprintf(file, "%s: too many actual arguments\n", functionName);
 
 			emitJump("call", ptr->son->token.value);
 			break;
@@ -761,6 +768,8 @@ void codeGen(Node *root, FILE *ucoFile)
 	{
 		if(p->token.number == DCL)
 			processDeclaration(globalTable, p->son);
+		else if(p->token.number == FUNC_DEF)
+			processFuncHeader(globalTable, p);
 	}
 	
 	for(i = 0 ; i < globalTable->count; i++)

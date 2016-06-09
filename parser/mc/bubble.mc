@@ -11,14 +11,15 @@ void main(){
 		read(element);
 	}
 
-	top = total = i -1;
+	total = i - 1;
+	top = total;
 	while(top > 1){
 		i = 1;
 		while (i < top){
 			if(list[i] > list[i+1]){
 				temp = list[i];
 				list[i] = list[i+1];
-				list[i+1] = tmp;
+				list[i+1] = temp;
 			}
 			++i;
 		}

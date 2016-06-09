@@ -1,0 +1,104 @@
+
+ line       object           ucode  source program
+
+   1    (38    1    1)                sym     1       1       0
+   2    (38    1    1)                sym     1       1       0
+   3    (35    5    2)     main       proc    5       2       2
+   4    (38    2    1)                sym     2       1       1
+   5    (38    2    2)                sym     2       2       1
+   6    (38    2    3)                sym     2       3       1
+   7    (38    2    4)                sym     2       4       1
+   8    (38    2    5)                sym     2       5       1
+   9    (20    2     )                ldc     2
+  10    (24    2    1)                str     2       1
+  11    (34          )     $$0        nop
+  12    (19    2    1)                lod     2       1
+  13    (20  100     )                ldc     100
+  14    (16          )                le
+  15    (28   57     )                fjp     $$1
+  16    (20    1     )                ldc     1
+  17    (24    2    5)                str     2       5
+  18    (19    2    1)                lod     2       1
+  19    (20    2     )                ldc     2
+  20    ( 9          )                div
+  21    (24    2    3)                str     2       3
+  22    (20    2     )                ldc     2
+  23    (24    2    2)                str     2       2
+  24    (34          )     $$2        nop
+  25    (19    2    2)                lod     2       2
+  26    (19    2    3)                lod     2       3
+  27    (16          )                le
+  28    (28   44     )                fjp     $$3
+  29    (19    2    1)                lod     2       1
+  30    (19    2    2)                lod     2       2
+  31    (10          )                mod
+  32    (24    2    4)                str     2       4
+  33    (19    2    4)                lod     2       4
+  34    (20    0     )                ldc     0
+  35    (17          )                eq
+  36    (28   39     )                fjp     $$4
+  37    (20    0     )                ldc     0
+  38    (24    2    5)                str     2       5
+  39    (34          )     $$4        nop
+  40    (19    2    2)                lod     2       2
+  41    ( 2          )                inc
+  42    (24    2    2)                str     2       2
+  43    (26   24     )                ujp     $$2
+  44    (34          )     $$3        nop
+  45    (19    2    5)                lod     2       5
+  46    (20    1     )                ldc     1
+  47    (17          )                eq
+  48    (28   52     )                fjp     $$5
+  49    (23          )                ldp
+  50    (19    2    1)                lod     2       1
+  51    (29   -2     )                call    write
+  52    (34          )     $$5        nop
+  53    (19    2    1)                lod     2       1
+  54    ( 2          )                inc
+  55    (24    2    1)                str     2       1
+  56    (26   11     )                ujp     $$0
+  57    (34          )     $$1        nop
+  58    (30          )                ret
+  59    (36          )                end
+  60    (37    0     )                bgn     0
+  61    (23          )                ldp
+  62    (29    3     )                call    main
+  63    (36          )                end
+
+
+
+   ****    Result    ****
+
+
+ 2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97
+
+   **********************
+
+
+
+
+                 #### Statistics ####
+
+
+    ****  Static Instruction Counts  ****
+
+
+inc    =  2       div    =  1       mod    =  1       le     =  2       
+eq     =  2       lod    =  11      ldc    =  8       ldp    =  2       
+str    =  8       ujp    =  2       fjp    =  4       call   =  2       
+ret    =  1       nop    =  6       proc   =  1       end    =  2       
+bgn    =  1       sym    =  7       
+
+
+  ****  Dynamic instruction counts  ****
+
+
+inc    =  2500      div    =  99        mod    =  2401      le     =  2600      
+eq     =  2500      lod    =  15026     ldc    =  3181      ldp    =  26        
+str    =  5482      ujp    =  2500      fjp    =  5100      call   =  26        
+ret    =  1         nop    =  5200      proc   =  1         end    =  1         
+bgn    =  1         sym    =  5         
+
+ Executable instruction count  =   41443
+
+ Total execution cycle         =   550045

@@ -1,3 +1,4 @@
+           sym     1       1       0
 main       proc    105     2       2
            sym     2       1       100
            sym     2       101     1
@@ -32,6 +33,7 @@ $$1        nop
            ldc     1
            sub
            str     2       102
+           lod     2       102
            str     2       104
 $$2        nop
            lod     2       104
@@ -77,6 +79,7 @@ $$4        nop
            add
            lda     2       1
            add
+           lod     2       105
            sti
 $$6        nop
            lod     2       103

@@ -19,7 +19,6 @@ typedef struct _symbolInfo{
 	Qualifier qual;
 	Specifier spec;
 	int width;
-	//int base;
 	int offset;
 	int initialValue;	
 } SymbolInfo;
@@ -57,7 +56,7 @@ void processSimpleVariable(SymbolTable *table, Node *ptr,
 void processArrayVariable(SymbolTable *table, Node *ptr,
 		Specifier spec, Qualifier qual);
 void processDeclaration(SymbolTable *table, Node *ptr);
-//void processFuncHeader(SymbolTable *table, Node *ptr);
+void processFuncHeader(SymbolTable *table, Node *ptr);
 void processOperator(SymbolTable *table, Node *ptr);
 void processStatement(SymbolTable *table, Node *ptr);
 void processCondition(SymbolTable *table, Node *ptr);
