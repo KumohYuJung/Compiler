@@ -6,12 +6,12 @@ main       proc    3       2       2
            str     2       1
            lod     2       1
            dup
-           inc
+           dec
            str     2       1
            str     2       2
            lod     2       1
-           inc
            dup
+           inc
            str     2       1
            str     2       3
            ldp
@@ -20,6 +20,10 @@ main       proc    3       2       2
            call    lf
            ldp
            lod     2       3
+           call    write
+           call    lf
+           ldp
+           lod     2       1
            call    write
            call    lf
            ret

@@ -219,9 +219,7 @@ void processSimpleVariable(SymbolTable *table, Node *ptr,
 	}
 	else
 	{
-		//fprintf(file,"wow~ declare~ %p\n",table);
 		insertSymbol(table, qual, spec, p->token.value, 1, 0);
-		//table->offset++;
 	}
 
 }
@@ -571,6 +569,9 @@ void processOperator(SymbolTable *table, Node *ptr)
 			lookupSymbol(q->token.value, &findTable, &stIndex);
 			if(stIndex == -1)
 				return;
+			
+			if(ptr->token.number == POST_INC || ptr->token.number == POST_DEC)
+				emit0("dup");
 
 			switch(ptr->token.number)
 			{
@@ -579,7 +580,10 @@ void processOperator(SymbolTable *table, Node *ptr)
 				case POST_INC:	emit0("inc");	break;
 				case POST_DEC:	emit0("dec");	break;
 			}
-
+			if(ptr->token.number == PRE_INC || ptr->token.number == PRE_DEC)
+				emit0("dup");
+			//if(ptr->token.number == POST_INC || ptr->token.number == POST_DEC)
+			//	emit0("swp");
 			if(p->noderep == TERMINAL)
 			{
 				findTable = table;
@@ -881,9 +885,6 @@ void codeGen(Node *root, FILE *ucoFile)
 	SymbolTable *globalTable = initSymbolTable();
 	flowTable = initFlowTable();
 
-	//loopLevel = 0;
-	//flag_returned = 0;
-	//flag_switch = 0;
 	for(p = root->son; p; p = p->brother)
 	{
 		if(p->token.number == DCL)
@@ -893,8 +894,10 @@ void codeGen(Node *root, FILE *ucoFile)
 	}
 	
 	for(i = 0 ; i < globalTable->count; i++)
-		emitSym("sym",globalTable->base, globalTable->symbols[i].offset, globalTable->symbols[i].width);
-
+	{
+		if( globalTable->symbols[i].qual == VAR_QUAL || globalTable->symbols[i].qual == CONST_QUAL )
+			emitSym("sym",globalTable->base, globalTable->symbols[i].offset, globalTable->symbols[i].width);
+	}
 	for( p = root->son; p; p = p->brother )
 	{
 		if(p->token.number == FUNC_DEF)

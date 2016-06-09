@@ -27,12 +27,12 @@
                      Nontermianl: EXP_ST
                           Nontermianl: ASSIGN_OP
                                Terminal: a
-                               Nontermianl: POST_INC
+                               Nontermianl: POST_DEC
                                     Terminal: i
                      Nontermianl: EXP_ST
                           Nontermianl: ASSIGN_OP
                                Terminal: b
-                               Nontermianl: PRE_INC
+                               Nontermianl: POST_INC
                                     Terminal: i
                      Nontermianl: EXP_ST
                           Nontermianl: CALL
@@ -50,4 +50,11 @@
                      Nontermianl: EXP_ST
                           Nontermianl: CALL
                                Terminal: lf
-                     Nontermianl: RETURN_ST
+                     Nontermianl: EXP_ST
+                          Nontermianl: CALL
+                               Terminal: write
+                               Nontermianl: ACTUAL_PARAM
+                                    Terminal: i
+                     Nontermianl: EXP_ST
+                          Nontermianl: CALL
+                               Terminal: lf

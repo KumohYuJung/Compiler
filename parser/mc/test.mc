@@ -1,12 +1,13 @@
-void main(){
+void main()
+{
 	int i,a,b;
 	i = 1;
-	a = i ++;
-	b = ++i;
+	a = i--;
+	b = i++;	
 	write(a);
 	lf();
 	write(b);
 	lf();
-	return;
+	write(i);
+	lf();
 }
-
