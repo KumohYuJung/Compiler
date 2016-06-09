@@ -71,14 +71,12 @@
                                                    Terminal: element
                      Nontermianl: EXP_ST
                           Nontermianl: ASSIGN_OP
-                               Terminal: total
-                               Nontermianl: SUB
-                                    Terminal: i
-                                    Terminal: 1
-                     Nontermianl: EXP_ST
-                          Nontermianl: ASSIGN_OP
                                Terminal: top
-                               Terminal: total
+                               Nontermianl: ASSIGN_OP
+                                    Terminal: total
+                                    Nontermianl: SUB
+                                         Terminal: i
+                                         Terminal: 1
                      Nontermianl: WHILE_ST
                           Nontermianl: GT
                                Terminal: top
@@ -133,7 +131,7 @@
                                                                                  Nontermianl: ADD
                                                                                       Terminal: i
                                                                                       Terminal: 1
-                                                                            Terminal: temp
+                                                                            Terminal: tmp
                                                    Nontermianl: EXP_ST
                                                         Nontermianl: PRE_INC
                                                              Terminal: i

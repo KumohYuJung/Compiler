@@ -1,3 +1,3 @@
 #!/bin/bash
 ./minic test.mc
-cat test.ast
+cat test.uco
