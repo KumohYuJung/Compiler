@@ -1,34 +1,11 @@
-           sym     1       1       1
-           sym     1       2       1
-           sym     1       3       0
-           sym     1       3       2
-main       proc    11      2       2
+           sym     1       1       0
+main       proc    1       2       2
            sym     2       1       1
-           sym     2       2       10
-           ldc     3
-           str     2       1
-           ldp
-           lod     2       1
-           call    write
-           ldp
-           lda     2       1
-           call    read
-           call    lf
-           ldp
-           ldc     3
-           lod     2       1
-           call    test
+FOR START
+FOR END
            ret
            end
-test       proc    2       2       2
-           sym     2       1       1
-           sym     2       2       1
-           lod     2       1
-           lod     2       2
-           add
-           retv
-           end
-           bgn     2
+           bgn     0
            ldp
            call    main
            end
