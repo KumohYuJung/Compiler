@@ -395,7 +395,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 
 	switch(ptr->token.number)
 	{
-		case ASSIGN_OP:
+		case ASSIGN_OP: 
 		{
 			Node *lhs = ptr->son, *rhs = ptr->son->brother;
 
@@ -582,8 +582,6 @@ void processOperator(SymbolTable *table, Node *ptr)
 			}
 			if(ptr->token.number == PRE_INC || ptr->token.number == PRE_DEC)
 				emit0("dup");
-			//if(ptr->token.number == POST_INC || ptr->token.number == POST_DEC)
-			//	emit0("swp");
 			if(p->noderep == TERMINAL)
 			{
 				findTable = table;
@@ -735,6 +733,8 @@ void processStatement(SymbolTable *table, Node *ptr)
 					case CASE_ST:
 						genLabel(label1);
 						processCondition(table, ptr->son->son->son);
+						emit1("ldc", atoi(p->son->token.value));
+						emit0("eq");
 						pushFlow(flowTable, SWITCH_QUAL, label1, label2);
 						emitJump("fjp",label1);
 						for(q = p->son->brother; q; q= q->brother)
@@ -755,8 +755,10 @@ void processStatement(SymbolTable *table, Node *ptr)
 
 		case FOR_ST:
 			fprintf(file,"FOR START\n");
-
-
+			for(p = ptr->son->son; p; p = p->brother)
+			{
+				processOperator(table, p);
+			}
 				
 			fprintf(file,"FOR END\n");	
 			break;

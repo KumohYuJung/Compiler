@@ -15,39 +15,55 @@
                                     Terminal: i
                           Nontermianl: DCL_ITEM
                                Nontermianl: SIMPLE_VAR
-                                    Terminal: a
-                          Nontermianl: DCL_ITEM
-                               Nontermianl: SIMPLE_VAR
-                                    Terminal: b
+                                    Terminal: j
                 Nontermianl: STAT_LIST
                      Nontermianl: EXP_ST
                           Nontermianl: ASSIGN_OP
                                Terminal: i
+                               Terminal: 3
+                     Nontermianl: SWITCH_ST
+                          Nontermianl: DCL_ITEM
+                               Nontermianl: SIMPLE_VAR
+                                    Terminal: i
+                          Nontermianl: CASE_ST
                                Terminal: 1
-                     Nontermianl: EXP_ST
-                          Nontermianl: ASSIGN_OP
-                               Terminal: a
+                          Nontermianl: CASE_ST
+                               Terminal: 2
+                               Nontermianl: EXP_ST
+                                    Nontermianl: CALL
+                                         Terminal: write
+                                         Nontermianl: ACTUAL_PARAM
+                                              Terminal: i
+                               Nontermianl: BREAK_ST
+                          Nontermianl: CASE_ST
+                               Terminal: 3
+                               Nontermianl: BREAK_ST
+                     Nontermianl: FOR_ST
+                          Nontermianl: FOR_DCL
+                               Nontermianl: DCL_ITEM
+                                    Nontermianl: SIMPLE_VAR
+                                         Terminal: j
+                                    Terminal: 0
+                               Nontermianl: DCL_ITEM
+                                    Nontermianl: SIMPLE_VAR
+                                         Terminal: i
+                                    Terminal: 2
+                          Nontermianl: FOR_EXP
+                               Nontermianl: LOGICAL_AND
+                                    Nontermianl: LT
+                                         Terminal: j
+                                         Terminal: 3
+                                    Nontermianl: LT
+                                         Terminal: i
+                                         Terminal: 4
+                          Nontermianl: FOR_INC
                                Nontermianl: POST_INC
-                                    Terminal: i
-                     Nontermianl: EXP_ST
-                          Nontermianl: ASSIGN_OP
-                               Terminal: b
-                               Nontermianl: PRE_INC
-                                    Terminal: i
-                     Nontermianl: EXP_ST
-                          Nontermianl: CALL
-                               Terminal: write
-                               Nontermianl: ACTUAL_PARAM
-                                    Terminal: a
-                     Nontermianl: EXP_ST
-                          Nontermianl: CALL
-                               Terminal: lf
-                     Nontermianl: EXP_ST
-                          Nontermianl: CALL
-                               Terminal: write
-                               Nontermianl: ACTUAL_PARAM
-                                    Terminal: b
-                     Nontermianl: EXP_ST
-                          Nontermianl: CALL
-                               Terminal: lf
-                     Nontermianl: RETURN_ST
+                                    Terminal: j
+                          Nontermianl: COMPOUND_ST
+                               Nontermianl: DCL_LIST
+                               Nontermianl: STAT_LIST
+                                    Nontermianl: EXP_ST
+                                         Nontermianl: CALL
+                                              Terminal: write
+                                              Nontermianl: ACTUAL_PARAM
+                                                   Terminal: i
