@@ -769,44 +769,6 @@ void processStatement(SymbolTable *table, Node *ptr)
 						emitLabel(label3);
 					break;
 				}
-
-				/*
-				switch(p->token.number)
-				{
-					case CASE_ST:
-						if(prevStatement)
-						{
-							prevStatement = 0;
-							prevCase = 0;
-							emitLabel(label1);
-							popFlow(flowTable);
-						}
-						if(prevCase){
-							genLabel(label1);
-							pushFlow(flowTable, SWITCH_QUAL, label1, label2);
-						}
-						processCondition(table, ptr->son->son->son);
-						emit1("ldc", atoi(p->son->token.value));
-						emit0("eq");
-						emitJump("fjp",label1);
-						//for(q = p->son->brother; q; q= q->brother)
-						//	processStatement(table, q);
-					//	if(prevCase){	
-					//		emitLabel(label1);
-					//		popFlow(flowTable);
-					//	}
-						prevCase = 1;
-						break;
-					case DEFAULT_ST:
-						pushFlow(flowTable, SWITCH_QUAL, label1, label2);
-					//	for(q = p->son; q; q= q->brother)
-					//		processStatement(table, q);
-						popFlow(flowTable);	
-						break;
-					default :
-						break;	
-				}
-				*/
 			}
 			emitLabel(label2);
 			break;
