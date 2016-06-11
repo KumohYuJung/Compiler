@@ -3,28 +3,13 @@ main       proc    2       2       2
            sym     2       2       1
            ldc     3
            str     2       1
-           lod     2       1
-           ldc     1
-           eq
-           fjp     $$1
-$$1        nop
-           lod     2       1
-           ldc     2
-           eq
-           fjp     $$2
-           ldp
-           lod     2       1
-           call    write
-           ujp     $$0
-$$2        nop
+FOR START
            lod     2       1
            ldc     3
-           eq
-           fjp     $$3
-           ujp     $$0
-$$3        nop
-$$0        nop
-FOR START
+           add
+           str     2       2
+           ldc     2
+           str     2       1
 FOR END
            ret
            end

@@ -214,11 +214,11 @@ for_dcl:
 	| { $$ = buildTree(FOR_DCL,NULL); } 
 	;
 for_dcl_list:
-	for_dcl_list ',' init_declarator {
+	for_dcl_list ',' assignment_exp { // init_declarator -> assignment_exp로 수정됨
 		appendBrother($1, $3);
 		$$ = $1;	
 	}
-	| init_declarator{
+	| assignment_exp{ //  init_declarator -> assignment_exp로 수정됨
 		$$ = $1;
 	}
 	;
