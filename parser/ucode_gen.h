@@ -11,7 +11,7 @@ typedef enum{
 } Specifier;
 
 typedef enum{
-	NONE_QUAL, CONST_QUAL, VAR_QUAL, FUNC_QUAL
+	NONE_QUAL, CONST_QUAL, VAR_QUAL, FUNC_QUAL, LOOP_QUAL, SWITCH_QUAL
 } Qualifier;
 
 typedef struct _symbolInfo{
@@ -31,9 +31,20 @@ typedef struct _symbolTable{
 	struct _symbolTable *parent; //parent table
 } SymbolTable;
 
+typedef struct _flowInfo{
+	char* startLabel; 
+	char* endLabel;
+	Qualifier qual;
+} FlowInfo;
+typedef struct _flowTable{
+	int count; // 현재 저장된 흐름 정보 개수
+	FlowInfo flows[SYM_TABLE_SIZE];
+} FlowTable;
+
 /** symbolTable **/
 SymbolTable* makeSymbolTable(SymbolTable *parent, int base);
 SymbolTable* initSymbolTable();
+
 /* 찾을 findID를 넣고 기준 SymbolTable를 넣으면 SymbolTable과
  * 어디에 위치하는지 index를 리턴합니다.*/
 void lookupSymbol(char* findId, SymbolTable** foundTable, int* findIdx);
@@ -41,6 +52,13 @@ void lookupSymbol(char* findId, SymbolTable** foundTable, int* findIdx);
  * 인덱스를 리턴한다. */
 int insertSymbol(SymbolTable* table, Qualifier qual, Specifier spec, 
 		char* id, int width, int initialValue);
+
+/** flowTable **/
+FlowTable* initFlowTable();
+void lookupFlow(FlowTable* table,Qualifier qual, char** foundStartLabel, char** foundEndLabel);
+void topFlow(FlowTable* table, char** foundStartLabel, char** foundEndLabel);
+void pushFlow(FlowTable* table,Qualifier qual, char* startLabel, char* endLabel);
+void popFlow(FlowTable* table);
 
 void emit0(char *opcode);
 void emit1(char *opcode, int operand);

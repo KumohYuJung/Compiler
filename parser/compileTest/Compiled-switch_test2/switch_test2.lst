@@ -1,0 +1,78 @@
+
+ line       object           ucode  source program
+
+   1    (35    1    2)     main       proc    1       2       2
+   2    (38    2    1)                sym     2       1       1
+   3    (20   10     )                ldc     10
+   4    (24    2    1)                str     2       1
+   5    (19    2    1)                lod     2       1
+   6    (20    1     )                ldc     1
+   7    (17          )                eq
+   8    (27   10     )                tjp     $$1
+   9    (26   12     )                ujp     $$2
+  10    (34          )     $$1        nop
+  11    (26   32     )                ujp     $$0
+  12    (34          )     $$2        nop
+  13    (19    2    1)                lod     2       1
+  14    (20   10     )                ldc     10
+  15    (17          )                eq
+  16    (27   18     )                tjp     $$3
+  17    (26   24     )                ujp     $$4
+  18    (34          )     $$3        nop
+  19    (23          )                ldp
+  20    (19    2    1)                lod     2       1
+  21    (29   -2     )                call    write
+  22    (29   -3     )                call    lf
+  23    (26   32     )                ujp     $$0
+  24    (34          )     $$4        nop
+  25    (27   27     )                tjp     $$5
+  26    (26   31     )                ujp     $$6
+  27    (34          )     $$5        nop
+  28    (29   -3     )                call    lf
+  29    (29   -3     )                call    lf
+  30    (26   32     )                ujp     $$0
+  31    (34          )     $$6        nop
+  32    (34          )     $$0        nop
+  33    (30          )                ret
+  34    (36          )                end
+  35    (37    0     )                bgn     0
+  36    (23          )                ldp
+  37    (29    1     )                call    main
+  38    (36          )                end
+
+
+
+   ****    Result    ****
+
+
+ 10
+
+
+   **********************
+
+
+
+
+                 #### Statistics ####
+
+
+    ****  Static Instruction Counts  ****
+
+
+eq     =  2       lod    =  3       ldc    =  3       ldp    =  2       
+str    =  1       ujp    =  6       tjp    =  3       call   =  5       
+ret    =  1       nop    =  7       proc   =  1       end    =  2       
+bgn    =  1       sym    =  1       
+
+
+  ****  Dynamic instruction counts  ****
+
+
+eq     =  2         lod    =  3         ldc    =  3         ldp    =  2         
+str    =  1         ujp    =  2         tjp    =  2         call   =  3         
+ret    =  1         nop    =  3         proc   =  1         end    =  1         
+bgn    =  1         sym    =  1         
+
+ Executable instruction count  =   20
+
+ Total execution cycle         =   285

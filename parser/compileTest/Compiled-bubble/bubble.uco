@@ -11,16 +11,16 @@ main       proc    105     2       2
            lda     2       101
            call    read
 $$0        nop
-           lod     2       106
+           lod     2       101
            ldc     0
            ne
            fjp     $$1
-           lod     2       106
+           lod     2       103
            lda     2       1
            add
-           lod     2       106
+           lod     2       101
            sti
-           lod     2       106
+           lod     2       103
            inc
            str     2       103
            ldp
@@ -28,28 +28,29 @@ $$0        nop
            call    read
            ujp     $$0
 $$1        nop
-           lod     2       106
+           lod     2       103
            ldc     1
            sub
            str     2       102
+           lod     2       102
            str     2       104
 $$2        nop
-           lod     2       106
+           lod     2       104
            ldc     1
            gt
            fjp     $$3
            ldc     1
            str     2       103
 $$4        nop
-           lod     2       106
-           lod     2       106
+           lod     2       103
+           lod     2       104
            lt
            fjp     $$5
-           lod     2       106
+           lod     2       103
            lda     2       1
            add
            ldi
-           lod     2       106
+           lod     2       103
            ldc     1
            add
            lda     2       1
@@ -57,34 +58,35 @@ $$4        nop
            ldi
            gt
            fjp     $$6
-           lod     2       106
+           lod     2       103
            lda     2       1
            add
            ldi
            str     2       105
-           lod     2       106
+           lod     2       103
            lda     2       1
            add
-           lod     2       106
+           lod     2       103
            ldc     1
            add
            lda     2       1
            add
            ldi
            sti
-           lod     2       106
+           lod     2       103
            ldc     1
            add
            lda     2       1
            add
+           lod     2       105
            sti
 $$6        nop
-           lod     2       106
+           lod     2       103
            inc
            str     2       103
            ujp     $$4
 $$5        nop
-           lod     2       106
+           lod     2       104
            dec
            str     2       104
            ujp     $$2
@@ -92,17 +94,17 @@ $$3        nop
            ldc     1
            str     2       103
 $$7        nop
-           lod     2       106
-           lod     2       106
+           lod     2       103
+           lod     2       102
            le
            fjp     $$8
            ldp
-           lod     2       106
+           lod     2       103
            lda     2       1
            add
            ldi
            call    write
-           lod     2       106
+           lod     2       103
            inc
            str     2       103
            ujp     $$7

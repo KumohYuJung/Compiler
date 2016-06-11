@@ -16,7 +16,7 @@ char *nodeName[] =
 		"PARAM_DCL",	"POST_DEC",		"POST_INC",		"PRE_DEC",		"PRE_INC",		
 		"PROGRAM",		"REMAINDER",	"RETURN_ST",	"SIMPLE_VAR",	"STAT_LIST",	
 		"SUB",			"SUB_ASSIGN",	"SWITCH_ST",	"UNARY_MINUS",	"VOID_TYPE",	
-		"WHILE_ST", 
+		"WHILE_ST",		"CASE_EXP",		"CASE_LST"
 };
 
 Node* buildNode(int tokenNumber, char* tokenValue)

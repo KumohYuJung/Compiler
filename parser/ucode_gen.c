@@ -6,9 +6,16 @@
 /* Global 변수 */
 int lvalue;
 int flag_returned;
+int flag_assigning;
+//int flag_switch;
 FILE * file;
+
+//char savedLabel1[SYM_TABLE_SIZE][LABEL_LEN] = {0};
+//char savedLabel2[SYM_TABLE_SIZE][LABEL_LEN] = {0};
+//int loopLevel;
 /* symbolTable 설정 */
 SymbolTable* currentTable;
+FlowTable* flowTable;
 
 SymbolTable* makeSymbolTable(SymbolTable *parent, int base)
 {
@@ -70,7 +77,60 @@ int insertSymbol(SymbolTable *table, Qualifier qual, Specifier spec, char *id, i
 	}
 	return -1;
 }
-
+FlowTable * initFlowTable()
+{
+	FlowTable* table = (FlowTable *)malloc(sizeof(FlowTable));
+	table->count = 0;
+	return table;
+}
+void lookupFlow(FlowTable* table,Qualifier qual, char** foundStartLabel, char** foundEndLabel)
+{
+	int i;
+	for(i = table->count-1; i >= 0; i--){
+		if(table->flows[i].qual == qual)
+		{
+			*foundStartLabel = (table->flows[i].startLabel);
+			*foundEndLabel = (table->flows[i].endLabel);
+			//printf("lookup : %s \n", *foundStartLabel);
+			return;
+		}	
+	}
+	//printf("nono\n");
+	*foundStartLabel = 0;
+	*foundEndLabel = 0;
+}
+void topFlow(FlowTable* table, char** foundStartLabel, char** foundEndLabel)
+{
+	int count = table->count;
+	if(count == 0)
+	{
+		*foundStartLabel = 0;
+		*foundEndLabel = 0;
+		return;
+	}
+	count--;
+	*foundStartLabel = (table->flows[count].startLabel);
+	*foundEndLabel = (table->flows[count].endLabel);
+}
+void pushFlow(FlowTable * table, Qualifier qual, char* startLabel, char* endLabel)
+{
+	int count = table->count++;
+	table->flows[count].qual = qual;
+	table->flows[count].startLabel = (char *)malloc(sizeof(char) * LABEL_LEN);
+	table->flows[count].endLabel   = (char *)malloc(sizeof(char) * LABEL_LEN);
+	//printf("push : %s \n", startLabel);
+	strcpy(table->flows[count].startLabel, startLabel);
+	strcpy(table->flows[count].endLabel, endLabel);
+}
+void popFlow(FlowTable * table)
+{	
+	int count = table->count--;
+	if( count > 0 )
+	{
+		free(table->flows[count].startLabel);
+		free(table->flows[count].endLabel);
+	}
+}
 void emit0(char *opcode)
 {
 	fprintf(file, "           %s\n", opcode);
@@ -160,9 +220,7 @@ void processSimpleVariable(SymbolTable *table, Node *ptr,
 	}
 	else
 	{
-		//fprintf(file,"wow~ declare~ %p\n",table);
 		insertSymbol(table, qual, spec, p->token.value, 1, 0);
-		//table->offset++;
 	}
 
 }
@@ -335,10 +393,11 @@ void processFunction(SymbolTable *table, Node *ptr)
 void processOperator(SymbolTable *table, Node *ptr) 
 {
 	int stIndex;
+	
 
 	switch(ptr->token.number)
 	{
-		case ASSIGN_OP:
+		case ASSIGN_OP: 
 		{
 			Node *lhs = ptr->son, *rhs = ptr->son->brother;
 
@@ -350,7 +409,11 @@ void processOperator(SymbolTable *table, Node *ptr)
 			}
 
 			if(rhs->noderep == NONTERM)
+			{
+				flag_assigning = 1;
 				processOperator(table, rhs);
+				flag_assigning = 0;
+			}
 			else
 				rv_emit(table, rhs);
 
@@ -512,6 +575,9 @@ void processOperator(SymbolTable *table, Node *ptr)
 			lookupSymbol(q->token.value, &findTable, &stIndex);
 			if(stIndex == -1)
 				return;
+			
+			if((flag_assigning == 1) && (ptr->token.number == POST_INC || ptr->token.number == POST_DEC))
+				emit0("dup");
 
 			switch(ptr->token.number)
 			{
@@ -520,6 +586,8 @@ void processOperator(SymbolTable *table, Node *ptr)
 				case POST_INC:	emit0("inc");	break;
 				case POST_DEC:	emit0("dec");	break;
 			}
+			if((flag_assigning == 1)&&(ptr->token.number == PRE_INC || ptr->token.number == PRE_DEC))
+				emit0("dup");
 
 			if(p->noderep == TERMINAL)
 			{
@@ -589,9 +657,9 @@ void processOperator(SymbolTable *table, Node *ptr)
 }
 void processStatement(SymbolTable *table, Node *ptr) 
 {
-	Node *p;
-	char label1[LABEL_LEN] = {0}, label2[LABEL_LEN] = {0};
-
+	Node *p, *q;
+	char label1[LABEL_LEN] = {0}, label2[LABEL_LEN] = {0}, label3[LABEL_LEN] = {0}; 
+	char *startLabel, *endLabel;
 	switch(ptr->token.number)
 	{
 		case COMPOUND_ST:
@@ -624,6 +692,26 @@ void processStatement(SymbolTable *table, Node *ptr)
 			flag_returned = 1;
 			break;
 
+		case CONTINUE_ST:
+			lookupFlow(flowTable,LOOP_QUAL, &startLabel, &endLabel);
+			if(startLabel == 0)
+			{
+				fprintf(file,"continue Error!");
+				return;
+			}
+			emitJump("ujp",startLabel);
+			break;
+		
+		case BREAK_ST: //일단 루프만 처리, 추후 switch지원
+			topFlow(flowTable, &startLabel, &endLabel);
+			if(startLabel == 0)
+			{
+				fprintf(file,"break error!");
+				return;
+			}
+			emitJump("ujp",endLabel);
+			break;
+
 		case IF_ST:
 			genLabel(label1);
 			processCondition(table, ptr->son);
@@ -643,10 +731,78 @@ void processStatement(SymbolTable *table, Node *ptr)
 			processStatement(table, ptr->son->brother->brother);
 			emitLabel(label2);
 			break;
+		case SWITCH_ST:
+			genLabel(label2);
+			for(p = ptr->son->brother; p; p = p->brother)
+			{
+				
+				switch(p->token.number)
+				{
+					case CASE_LST:
+						genLabel(label1);
+						pushFlow(flowTable, SWITCH_QUAL, label1, label2);
+						for(q = p->son; q; q = q->brother)
+						{
+							switch(q->token.number)
+							{
+								case CASE_ST:
+									processCondition(table, ptr->son->son->son);
+									emit1("ldc", atoi(q->son->token.value));
+									emit0("eq");
+									emitJump("tjp",label1);
+								break;
+								case DEFAULT_ST:
+									emitJump("ujp",label1);
+								break;
+							}
+						}
+						genLabel(label3);
+						emitJump("ujp",label3);
+					break;
+					case CASE_EXP:
+						emitLabel(label1);
+						for(q = p->son; q; q=q->brother)
+						{
+							processStatement(table,q);
+						}
+						popFlow(flowTable);
+						emitLabel(label3);
+					break;
+				}
+			}
+			emitLabel(label2);
+			break;
+
+		case FOR_ST:
+			for(p = ptr->son->son; p; p = p->brother)
+			{
+				processOperator(table, p);
+			}
+			genLabel(label1);
+			genLabel(label2);
+			pushFlow(flowTable, LOOP_QUAL, label1, label2);
+			
+			emitLabel(label1);
+			processCondition(table, ptr->son->brother->son);
+			emitJump("fjp", label2);
+
+			processStatement(table,ptr->son->brother->brother->brother);
+			
+			for(p = ptr->son->brother->brother->son; p; p= p->brother)
+			{
+				processOperator(table,p);
+			}
+			
+			emitJump("ujp",label1);
+			emitLabel(label2);
+			popFlow(flowTable);
+			break;
 
 		case WHILE_ST:
 			genLabel(label1);
 			genLabel(label2);
+			pushFlow(flowTable, LOOP_QUAL, label1, label2);
+			
 			emitLabel(label1);
 			processCondition(table, ptr->son);
 			emitJump("fjp", label2);
@@ -655,6 +811,7 @@ void processStatement(SymbolTable *table, Node *ptr)
 
 			emitJump("ujp", label1);
 			emitLabel(label2);
+			popFlow(flowTable);
 			break;
 
 		default:
@@ -763,6 +920,7 @@ void codeGen(Node *root, FILE *ucoFile)
 	int i;
 	file = ucoFile;
 	SymbolTable *globalTable = initSymbolTable();
+	flowTable = initFlowTable();
 
 	for(p = root->son; p; p = p->brother)
 	{
@@ -773,8 +931,10 @@ void codeGen(Node *root, FILE *ucoFile)
 	}
 	
 	for(i = 0 ; i < globalTable->count; i++)
-		emitSym("sym",globalTable->base, globalTable->symbols[i].offset, globalTable->symbols[i].width);
-
+	{
+		if( globalTable->symbols[i].qual == VAR_QUAL || globalTable->symbols[i].qual == CONST_QUAL )
+			emitSym("sym",globalTable->base, globalTable->symbols[i].offset, globalTable->symbols[i].width);
+	}
 	for( p = root->son; p; p = p->brother )
 	{
 		if(p->token.number == FUNC_DEF)
