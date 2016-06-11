@@ -3,14 +3,22 @@ main       proc    2       2       2
            sym     2       2       1
            ldc     3
            str     2       1
-FOR START
            lod     2       1
-           ldc     3
-           add
-           str     2       2
-           ldc     2
+           inc
            str     2       1
-FOR END
+           lod     2       1
+           inc
+           str     2       1
+           lod     2       1
+           inc
+           dup
+           str     2       1
+           str     2       2
+           lod     2       1
+           dup
+           inc
+           str     2       1
+           str     2       2
            ret
            end
            bgn     0

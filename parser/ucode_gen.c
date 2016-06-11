@@ -6,6 +6,7 @@
 /* Global 변수 */
 int lvalue;
 int flag_returned;
+int flag_assigning;
 //int flag_switch;
 FILE * file;
 
@@ -392,6 +393,7 @@ void processFunction(SymbolTable *table, Node *ptr)
 void processOperator(SymbolTable *table, Node *ptr) 
 {
 	int stIndex;
+	
 
 	switch(ptr->token.number)
 	{
@@ -407,7 +409,11 @@ void processOperator(SymbolTable *table, Node *ptr)
 			}
 
 			if(rhs->noderep == NONTERM)
+			{
+				flag_assigning = 1;
 				processOperator(table, rhs);
+				flag_assigning = 0;
+			}
 			else
 				rv_emit(table, rhs);
 
@@ -570,7 +576,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 			if(stIndex == -1)
 				return;
 			
-			if(ptr->token.number == POST_INC || ptr->token.number == POST_DEC)
+			if((flag_assigning == 1) && (ptr->token.number == POST_INC || ptr->token.number == POST_DEC))
 				emit0("dup");
 
 			switch(ptr->token.number)
@@ -580,8 +586,9 @@ void processOperator(SymbolTable *table, Node *ptr)
 				case POST_INC:	emit0("inc");	break;
 				case POST_DEC:	emit0("dec");	break;
 			}
-			if(ptr->token.number == PRE_INC || ptr->token.number == PRE_DEC)
+			if((flag_assigning == 1)&&(ptr->token.number == PRE_INC || ptr->token.number == PRE_DEC))
 				emit0("dup");
+
 			if(p->noderep == TERMINAL)
 			{
 				findTable = table;
@@ -754,13 +761,28 @@ void processStatement(SymbolTable *table, Node *ptr)
 			break;
 
 		case FOR_ST:
-			fprintf(file,"FOR START\n");
 			for(p = ptr->son->son; p; p = p->brother)
 			{
 				processOperator(table, p);
 			}
-				
-			fprintf(file,"FOR END\n");	
+			genLabel(label1);
+			genLabel(label2);
+			pushFlow(flowTable, LOOP_QUAL, label1, label2);
+			
+			emitLabel(label1);
+			processCondition(table, ptr->son->brother->son);
+			emitJump("fjp", label2);
+
+			processStatement(table,ptr->son->brother->brother->brother);
+			
+			for(p = ptr->son->brother->brother->son; p; p= p->brother)
+			{
+				processOperator(table,p);
+			}
+			
+			emitJump("ujp",label1);
+			emitLabel(label2);
+			popFlow(flowTable);
 			break;
 
 		case WHILE_ST:
