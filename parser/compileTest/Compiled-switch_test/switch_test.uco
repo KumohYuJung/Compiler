@@ -85,7 +85,7 @@ $$7        nop
            call    lf
            ujp     $$2
 $$8        nop
-           tjp     $$9
+           ujp     $$9
            ujp     $$10
 $$9        nop
            ldp

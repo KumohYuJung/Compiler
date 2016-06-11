@@ -752,7 +752,7 @@ void processStatement(SymbolTable *table, Node *ptr)
 									emitJump("tjp",label1);
 								break;
 								case DEFAULT_ST:
-									emitJump("tjp",label1);
+									emitJump("ujp",label1);
 								break;
 							}
 						}
