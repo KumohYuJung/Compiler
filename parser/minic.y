@@ -38,7 +38,7 @@ Node *root;
 	formal_param_list param_dcl compound_st opt_dcl_list declaration_list declaration init_dcl_list
 	init_declarator declarator opt_number opt_stat_list statement_list statement expression_st 
 	opt_expression if_st while_st return_st for_st for_dcl for_dcl_list for_exp for_inc for_inc_list
-	continue_st break_st switch_st switch_case_list switch_case loop_st condition_st flow_st expression
+	continue_st break_st switch_st switch_list  switch_compound case_list switch_case loop_st condition_st flow_st expression
 	assignment_exp logical_or_exp logical_and_exp equality_exp relational_exp additive_exp
 	multiplicative_exp unary_exp postfix_exp opt_actual_param actual_param_list actual_param primary_exp
 
@@ -251,33 +251,39 @@ break_st:
 	}
 	;
 switch_st:
-	TSWITCH '(' declarator ')' '{' switch_case_list'}' {
+	TSWITCH '(' declarator ')' '{' switch_list '}' {
 		appendBrother($3, $6);	
 		$$ = buildTree(SWITCH_ST, $3);
 	}
 	;
-switch_case_list:
-	switch_case_list switch_case {
-		appendBrother($1, $2);
+switch_list:
+	switch_list switch_compound {
+		appendBrother($1, $2);	
+	} 
+	| switch_compound {
 		$$ = $1;
+	};
+switch_compound:
+	case_list statement_list {
+		Node *p = buildTree(CASE_EXP,$2);
+		Node *q = buildTree(CASE_LST,$1);
+		appendBrother(q, p);
+		$$ = q;
+	}
+	;
+case_list:
+	case_list switch_case {
+		appendBrother($1, $2);
 	}
 	| switch_case {
 		$$ = $1;
 	}
 	;
-switch_case:
-	TCASE TINTEGER ':' statement_list {
-		Node *son = buildNode(NUMBER, $2);
-		appendBrother(son, $4);
-		$$ = buildTree(CASE_ST, son);		
-	}
-	| TCASE TINTEGER ':' {
+switch_case: 
+	TCASE TINTEGER ':' { // 전체적인 문법이 수정됨 
 		Node * son = buildNode(NUMBER, $2);
 		$$ = buildTree(CASE_ST, son);		
 	}
-	| TDEFAULT ':' statement_list {
-		$$ = buildTree(DEFAULT_ST, $3);
-	} 
 	| TDEFAULT ':'{
 		$$ = buildTree(DEFAULT_ST, NULL);
 	}

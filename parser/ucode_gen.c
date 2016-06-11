@@ -658,7 +658,7 @@ void processOperator(SymbolTable *table, Node *ptr)
 void processStatement(SymbolTable *table, Node *ptr) 
 {
 	Node *p, *q;
-	char label1[LABEL_LEN] = {0}, label2[LABEL_LEN] = {0};
+	char label1[LABEL_LEN] = {0}, label2[LABEL_LEN] = {0}, label3[LABEL_LEN] = {0}; 
 	char *startLabel, *endLabel;
 	switch(ptr->token.number)
 	{
@@ -735,27 +735,78 @@ void processStatement(SymbolTable *table, Node *ptr)
 			genLabel(label2);
 			for(p = ptr->son->brother; p; p = p->brother)
 			{
+				
+				switch(p->token.number)
+				{
+					case CASE_LST:
+						genLabel(label1);
+						pushFlow(flowTable, SWITCH_QUAL, label1, label2);
+						for(q = p->son; q; q = q->brother)
+						{
+							switch(q->token.number)
+							{
+								case CASE_ST:
+									processCondition(table, ptr->son->son->son);
+									emit1("ldc", atoi(q->son->token.value));
+									emit0("eq");
+									emitJump("tjp",label1);
+								break;
+								case DEFAULT_ST:
+									emitJump("tjp",label1);
+								break;
+							}
+						}
+						genLabel(label3);
+						emitJump("ujp",label3);
+					break;
+					case CASE_EXP:
+						emitLabel(label1);
+						for(q = p->son; q; q=q->brother)
+						{
+							processStatement(table,q);
+						}
+						popFlow(flowTable);
+						emitLabel(label3);
+					break;
+				}
+
+				/*
 				switch(p->token.number)
 				{
 					case CASE_ST:
-						genLabel(label1);
+						if(prevStatement)
+						{
+							prevStatement = 0;
+							prevCase = 0;
+							emitLabel(label1);
+							popFlow(flowTable);
+						}
+						if(prevCase){
+							genLabel(label1);
+							pushFlow(flowTable, SWITCH_QUAL, label1, label2);
+						}
 						processCondition(table, ptr->son->son->son);
 						emit1("ldc", atoi(p->son->token.value));
 						emit0("eq");
-						pushFlow(flowTable, SWITCH_QUAL, label1, label2);
 						emitJump("fjp",label1);
-						for(q = p->son->brother; q; q= q->brother)
-							processStatement(table, q);
-						emitLabel(label1);
-						popFlow(flowTable);
+						//for(q = p->son->brother; q; q= q->brother)
+						//	processStatement(table, q);
+					//	if(prevCase){	
+					//		emitLabel(label1);
+					//		popFlow(flowTable);
+					//	}
+						prevCase = 1;
 						break;
 					case DEFAULT_ST:
 						pushFlow(flowTable, SWITCH_QUAL, label1, label2);
-						for(q = p->son; q; q= q->brother)
-							processStatement(table, q);
+					//	for(q = p->son; q; q= q->brother)
+					//		processStatement(table, q);
 						popFlow(flowTable);	
 						break;
+					default :
+						break;	
 				}
+				*/
 			}
 			emitLabel(label2);
 			break;

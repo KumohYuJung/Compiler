@@ -1,5 +1,3 @@
-           sym     1       1       0
-           sym     1       1       1
 main       proc    2       2       2
            sym     2       1       1
            sym     2       2       1

@@ -5,5 +5,6 @@ void main()
 	for(i = 0 ; i < range; i++)
 	{
 		write(i);
+		lf();
 	}
 }
