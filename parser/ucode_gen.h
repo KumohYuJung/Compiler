@@ -55,11 +55,16 @@ int insertSymbol(SymbolTable* table, Qualifier qual, Specifier spec,
 
 /** flowTable **/
 FlowTable* initFlowTable();
+/* 내가 원하는 Qualifier의 최상단 부터 최하단 까지 검색을 함. 중간에 발견 하면 return */
 void lookupFlow(FlowTable* table,Qualifier qual, char** foundStartLabel, char** foundEndLabel);
+/* 최상단의 label을 가져옴 */
 void topFlow(FlowTable* table, char** foundStartLabel, char** foundEndLabel);
+/* label을 입력함 */
 void pushFlow(FlowTable* table,Qualifier qual, char* startLabel, char* endLabel);
+/* label제거 */
 void popFlow(FlowTable* table);
 
+/* 출력 구문들 */
 void emit0(char *opcode);
 void emit1(char *opcode, int operand);
 void emit2(char *opcode, int operand1, int operand2);
@@ -68,21 +73,31 @@ void emitSym(char *opcode, int operand1, int operand2, int operand3);
 void emitProc(char *label, int operand1, int operand2, int operand3);
 void emitLabel(char *label);
 
+/* 상수, 변수에 따라 다르게 출력*/
 void rv_emit(SymbolTable *table, Node *ptr);
+/* 단 변수 처리 */
 void processSimpleVariable(SymbolTable *table, Node *ptr, 
 		Specifier spec, Qualifier qual);
+/* 복수 변수 (배열) 처리 */
 void processArrayVariable(SymbolTable *table, Node *ptr,
 		Specifier spec, Qualifier qual);
+/* 선언문 처리 */
 void processDeclaration(SymbolTable *table, Node *ptr);
+/* 함수 헤더 처리 -> SymbolTable에 함수 input*/
 void processFuncHeader(SymbolTable *table, Node *ptr);
+/* 연산자 처리 */
 void processOperator(SymbolTable *table, Node *ptr);
+/* 흐름 처리 */
 void processStatement(SymbolTable *table, Node *ptr);
+/* 조건 값 처리 */
 void processCondition(SymbolTable *table, Node *ptr);
-
+/* 함수 U-code 생성 */
 void processFunction(SymbolTable *table, Node *ptr);
+/* 미리 선언된 함수들 처리 (write, read, lf)*/
 int checkPredefined(SymbolTable *table, Node *ptr);
-
+/* label 생성 */
 void genLabel(char *label);
+/* code 생성 시작 함수 */
 void codeGen(Node *root, FILE *ucoFile);
 
 
